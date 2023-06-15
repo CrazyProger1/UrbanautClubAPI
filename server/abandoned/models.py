@@ -3,9 +3,6 @@ from django.db import models
 from abandoned.limits import *
 
 
-# from django.contrib.gis.db import models
-
-
 class Coordinates(models.Model):
     class Meta:
         unique_together = ('latitude', 'longitude')
