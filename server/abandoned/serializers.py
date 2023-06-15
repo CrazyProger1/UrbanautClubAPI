@@ -5,4 +5,4 @@ from abandoned.models import *
 class AbandonedObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = AbandonedObject
-        fields = '__all__'
+        fields = ('id', 'name', 'description', 'state', 'category', 'location')

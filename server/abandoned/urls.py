@@ -3,5 +3,6 @@ from django.urls import path, include
 from abandoned.views import *
 
 urlpatterns = [
-    path('objects/', AbandonedObjectListAPIView.as_view())
+    path('objects/', AbandonedObjectListCreateAPIView.as_view()),
+    # path('objects/<id: int>', AbandonedObjectListAPIView.as_view())
 ]
