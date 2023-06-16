@@ -1,16 +1,9 @@
-# This is a sample Python script.
+from models import *
+from serializers import *
+from managers import *
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+aobj1 = AbandonedObjectAPIManager.create(name='test', description='kuku epta', state='a', category='Bunker entrance')
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+print(aobj1.name)
+print(aobj1.description)
+print(AbandonedObjectSerializer.serialize(aobj1))
