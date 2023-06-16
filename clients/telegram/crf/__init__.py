@@ -1,9 +1,10 @@
 from crf.models import Model
 from crf.serializers import Serializer
-from crf.managers import APIManager
+from crf.managers import APIManager, APIRoute
 
 __all__ = [
     'Model',
     'Serializer',
-    'APIManager'
+    'APIManager',
+    'APIRoute'
 ]

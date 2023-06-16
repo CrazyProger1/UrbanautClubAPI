@@ -9,9 +9,12 @@ class Serializer:
     @classmethod
     def get_model(cls) -> type[Model]:
         try:
-            return cls.Meta.model
+            model = cls.Meta.model
+            if not issubclass(model, Model):
+                raise TypeError('Meta.model must be a subclass of Model')
+            return model
         except AttributeError:
-            raise AttributeError('Model not specified')
+            raise AttributeError('Meta.model not specified')
 
     @classmethod
     def serialize(cls, instance: Model) -> dict:

@@ -1,36 +1,68 @@
+import aiohttp
+import enum
 from crf.serializers import Serializer
+
+
+class APIRoute(enum.Enum):
+    POST = 1
+    GET = 2
+    UPDATE = 3
+    DELETE = 4
+    COMMON = 5
 
 
 class APIManager:
     class Meta:
         serializer_class: type[Serializer]
+        routes: dict[APIRoute, str]
+
+    @classmethod
+    def get_api_route(cls, route: APIRoute) -> str:
+        try:
+            url = cls.Meta.routes.get(route, cls.Meta.routes.get(APIRoute.COMMON))
+            if not url:
+                raise
+            return url
+        except AttributeError:
+            raise AttributeError('Meta.routes not specified')
 
     @classmethod
     def get_serializer(cls) -> type[Serializer]:
         try:
-            return cls.Meta.serializer_class
+            serializer = cls.Meta.serializer_class
+            if not issubclass(serializer, Serializer):
+                raise TypeError('Meta.serializer_class must be a subclass of serializer')
+            return serializer
         except AttributeError:
-            raise AttributeError('Serializer class not specified')
+            raise AttributeError('Meta.serializer_class class not specified')
 
     @classmethod
-    def create(cls, **data):
+    async def create(cls, **data):
         serializer = cls.get_serializer()
         instance = serializer.deserialize(data)
 
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                    url=cls.get_api_route(APIRoute.POST),
+                    data=data
+            ) as response:
+                data = await response.text()
+                print(response.status)
+                print('Data:', data)
         return instance
 
     @classmethod
-    def retrieve(cls):
+    async def retrieve(cls):
         pass
 
     @classmethod
-    def update(cls):
+    async def update(cls):
         pass
 
     @classmethod
-    def destroy(cls):
+    async def destroy(cls):
         pass
 
     @classmethod
-    def list(cls):
+    async def list(cls):
         pass
