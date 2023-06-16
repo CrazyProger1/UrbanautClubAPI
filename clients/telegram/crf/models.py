@@ -1,5 +1,7 @@
 import peewee
+from crf.database import db
 
 
 class Model(peewee.Model):
-    pass
+    class Meta:
+        database = db

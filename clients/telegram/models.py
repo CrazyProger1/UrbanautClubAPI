@@ -1,5 +1,5 @@
 import peewee
-from crf import Model, Serializer
+from crf import Model, Serializer, db
 
 
 class Coordinates(Model):
@@ -18,8 +18,8 @@ class Coordinates(Model):
 
 class Address(Model):
     id = peewee.IntegerField(primary_key=True)
-    # country = models.ForeignKey('cities_light.Country', on_delete=models.CASCADE)
-    # city = models.ForeignKey('cities_light.City', on_delete=models.CASCADE)
+    country = peewee.CharField(max_length=100, null=True)
+    city = peewee.CharField(max_length=100, null=True)
     street = peewee.CharField(max_length=100, null=True)
     street_number = peewee.CharField(max_length=4, null=True)
     zipcode = peewee.CharField(max_length=10, null=True)
@@ -31,10 +31,16 @@ class AbandonedObjectLocation(Model):
     address = peewee.ForeignKeyField(Address)
 
 
+class AbandonedObjectCategory(Model):
+    name = peewee.CharField(max_length=50, primary_key=True)
+
+
 class AbandonedObject(Model):
     id = peewee.IntegerField(primary_key=True)
     name = peewee.CharField(max_length=250)
     description = peewee.CharField(max_length=100)
 
     category = peewee.CharField(max_length=50)
+    # category = peewee.ForeignKeyField(AbandonedObjectCategory, field='name')
     state = peewee.CharField(max_length=1)
+    location = peewee.ForeignKeyField(AbandonedObjectLocation)

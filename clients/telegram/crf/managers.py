@@ -46,9 +46,9 @@ class APIManager:
                     url=cls.get_api_route(APIRoute.POST),
                     data=data
             ) as response:
-                data = await response.text()
-                print(response.status)
-                print('Data:', data)
+                data = await response.json()
+                # print(response.status)
+                # print('Data:', data)
         return instance
 
     @classmethod
@@ -65,4 +65,25 @@ class APIManager:
 
     @classmethod
     async def list(cls):
-        pass
+        serializer = cls.get_serializer()
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=cls.get_api_route(APIRoute.GET)) as response:
+                data = await response.json()
+                print(response.status)
+                print('Data:', data)
+
+    @classmethod
+    async def list_paginated(cls):
+        objects = []
+        serializer = cls.get_serializer()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=cls.get_api_route(APIRoute.GET)) as response:
+                data = await response.json()
+                if response.status == 200:
+                    results = data['results']
+                    next_page = data['next']
+
+                    for dataset in results:
+                        objects.append(serializer.deserialize(dataset))
+        return objects
