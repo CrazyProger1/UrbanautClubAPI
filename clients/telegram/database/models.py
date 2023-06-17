@@ -1,5 +1,5 @@
 import peewee
-from api.crf.models import Model
+from crf.models import Model
 from database.limits import *
 from conf import settings
 

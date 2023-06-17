@@ -1,4 +1,4 @@
-import api.crf.managers
+import crf.managers
 
 __all__ = [
     'models',
