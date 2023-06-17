@@ -1,24 +1,24 @@
 import aiogram
 
-from database.models import Users
-from utils import logging, cls
-from .types import Page
+from database.models import TelegramUser
+from utils import logging, cls_utils
+from .pages import Page
 
 
-class Router(metaclass=cls.SingletonMeta):
+class Router(metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._bot = bot
         self._init_pages()
 
     def _init_pages(self):
-        for page in cls.iter_subclasses(Page):
+        for page in cls_utils.iter_subclasses(Page):
             page(
                 bot=self._bot,
                 set_page_callback=self.set_page
             )
 
     @staticmethod
-    async def get_page(user: Users) -> Page:
+    async def get_page(user: TelegramUser) -> Page:
         page = user.state.page
         if not page:
             await Router.set_page(user, Page.get_default())
@@ -27,7 +27,7 @@ class Router(metaclass=cls.SingletonMeta):
         return page
 
     @staticmethod
-    async def set_page(user: Users, page: str | Page | type[Page], reload: bool = False):
+    async def set_page(user: TelegramUser, page: str | Page | type[Page], reload: bool = False):
         old_page: Page = user.state.page
         new_page: Page | None = None
 
@@ -51,7 +51,7 @@ class Router(metaclass=cls.SingletonMeta):
                 logging.logger.debug(f'User {user} changed page to {new_page}')
 
     @staticmethod
-    async def reload_page(user: Users):
+    async def reload_page(user: TelegramUser):
         curr_page = user.state.page
         logging.logger.debug(f'Page {curr_page} reloaded for user {user}')
         await Router.set_page(user, curr_page, reload=True)

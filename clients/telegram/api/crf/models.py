@@ -1,7 +1,7 @@
 import peewee
-from database.database import db
+from database.database import connection
 
 
 class Model(peewee.Model):
     class Meta:
-        database = db
+        database = connection

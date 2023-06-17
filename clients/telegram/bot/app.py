@@ -3,12 +3,14 @@ import aiogram
 
 from aiogram import types
 from conf import settings
+from .router import Router
 
 
 class App:
     def __init__(self):
         self._bot = aiogram.Bot(token=settings.BOT.TOKEN)
         self._dispatcher = aiogram.Dispatcher(bot=self._bot)
+        self._router = Router(bot=self._bot)
 
     async def _handle_callback(self, *args, **kwargs):
         await self._router.route_callback(*args, **kwargs)
