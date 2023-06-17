@@ -1,5 +1,5 @@
-from database.models import *
-from crf.serializers import Serializer
+from crf.serializer import Serializer
+from .models import *
 
 
 class AbandonedObjectSerializer(Serializer):

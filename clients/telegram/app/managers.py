@@ -1,4 +1,4 @@
-from crf import APIManager, APIRoute
+from crf.manager import APIManager, APIRoute
 from app.serializers import AbandonedObjectSerializer
 
 

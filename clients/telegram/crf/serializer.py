@@ -1,4 +1,4 @@
-from crf.models import Model
+from database.model import Model
 from playhouse import shortcuts
 
 

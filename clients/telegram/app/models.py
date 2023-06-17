@@ -1,7 +1,7 @@
 import peewee
-from crf.models import Model
-from database.limits import *
+from database.model import Model
 from conf import settings
+from .limits import *
 
 
 class Coordinates(Model):
