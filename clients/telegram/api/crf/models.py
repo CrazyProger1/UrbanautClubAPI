@@ -1,5 +1,5 @@
 import peewee
-from crf.database import db
+from database.database import db
 
 
 class Model(peewee.Model):

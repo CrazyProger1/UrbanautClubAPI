@@ -23,6 +23,12 @@ class AbandonedObjectLocationSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AbandonedObjectCategory
+        fields = '__all__'
+
+
 class AbandonedObjectSerializer(serializers.ModelSerializer):
     location = AbandonedObjectLocationSerializer()
 

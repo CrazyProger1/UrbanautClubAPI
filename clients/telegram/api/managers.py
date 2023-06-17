@@ -1,5 +1,5 @@
-from crf import APIManager, APIRoute
-from serializers import AbandonedObjectSerializer
+from .crf.managers import APIManager, APIRoute
+from api.serializers import AbandonedObjectSerializer
 
 
 class AbandonedObjectAPIManager(APIManager):

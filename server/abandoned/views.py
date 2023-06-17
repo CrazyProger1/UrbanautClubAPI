@@ -18,3 +18,10 @@ class AbandonedObjectListCreateAPIView(generics.ListCreateAPIView):
 class AbandonedObjectRetrieveAPIView(generics.RetrieveAPIView):
     queryset = get_all_objects()
     serializer_class = AbandonedObjectSerializer
+
+
+class AbandonedObjectCategoryListAPIView(generics.ListAPIView):
+    queryset = get_all_categories()
+    serializer_class = AbandonedObjectCategorySerializer
+
+
