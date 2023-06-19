@@ -1,18 +1,23 @@
 import sys
 import aiogram
 
-from utils.cls_utils import SingletonMeta
+from utils import cls_utils, events
 from aiogram import types
+from enum import Enum
 from conf import settings
 from .router import Router
 
 
-class Bot(metaclass=SingletonMeta):
+class Bot(events.EventChannel, metaclass=cls_utils.SingletonMeta):
+    class Event(Enum):
+        INITIALIZE = 1
+        DESTROY = 2
 
     def __init__(self):
         self._aiogram_bot = aiogram.Bot(token=settings.BOT.TOKEN)
         self._aiogram_dispatcher = aiogram.Dispatcher(bot=self._aiogram_bot)
         self._router = Router(self._aiogram_bot)
+        super(Bot, self).__init__()
 
     async def _handle_callback(self, *args, **kwargs):
         await self._router.route_callback(*args, **kwargs)
@@ -46,17 +51,11 @@ class Bot(metaclass=SingletonMeta):
             callback=self._handle_callback
         )
 
-    def initialize(self):
-        pass
-
-    def destroy(self):
-        pass
-
     def run(self):
-        self.initialize()
+        self.publish(self.Event.INITIALIZE)
         self._register_handlers()
         aiogram.executor.start_polling(
             dispatcher=self._aiogram_dispatcher,
             skip_updates=True
         )
-        self.destroy()
+        self.publish(self.Event.DESTROY)

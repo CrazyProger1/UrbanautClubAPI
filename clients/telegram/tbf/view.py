@@ -1,19 +1,29 @@
 import functools
 import aiogram
 
+from enum import Enum
 from typing import Optional, Callable
 from aiogram import types
-from utils import cls_utils, string
+from utils import cls_utils, string, events
 
 
-class View(metaclass=cls_utils.SingletonMeta):
+class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     class Meta:
         default = False
         path = ''
 
+    class Event(Enum):
+        INITIALIZE = 1
+        DESTROY = 2
+        MESSAGE = 3
+        COMMAND = 4
+        CALLBACK = 5
+        MEDIA = 6
+
     def __init__(self, bot: aiogram.Bot, set_view_callback: Callable):
         self._aiogram_bot = bot
         self._set_view = set_view_callback
+        super(View, self).__init__()
 
     async def back(self, user):
         try:
@@ -55,19 +65,19 @@ class View(metaclass=cls_utils.SingletonMeta):
                 return view()
 
     async def initialize(self, user):
-        pass
+        await self.async_publish(self.Event.INITIALIZE, user)
 
     async def destroy(self, user):
-        pass
+        await self.async_publish(self.Event.DESTROY, user)
 
     async def handle_callback(self, *args, **kwargs):
-        pass
+        await self.async_publish(self.Event.CALLBACK, args, kwargs)
 
     async def handle_message(self, *args, **kwargs):
-        pass
+        await self.async_publish(self.Event.MESSAGE, args, kwargs)
 
     async def handle_media(self, *args, **kwargs):
-        pass
+        await self.async_publish(self.Event.MEDIA, args, kwargs)
 
     async def handle_command(self, *args, **kwargs):
-        pass
+        await self.async_publish(self.Event.COMMAND, args, kwargs)
