@@ -30,7 +30,7 @@ class Router(metaclass=cls_utils.SingletonMeta):
                     index += 1
                     return await middleware(next_step, *args, **kwgs)
 
-                return await next_step(message_or_callback, **kwargs)
+                return await next_step(message_or_callback, **kwargs, content_type=content_type)
 
             return wrapper
 
@@ -44,8 +44,24 @@ class Router(metaclass=cls_utils.SingletonMeta):
         try:
             return self._user_states[user]
         except KeyError:
-            self._user_states[user] = UserState(user, View.get_default())
+            self._user_states[user] = UserState(user, None)
+            await self.set_view(user, View.get_default())
             return self._user_states[user]
+
+    async def set_view(self, user, view: str | View):
+        if isinstance(view, str):
+            view_obj = View.get(view)
+            if not view_obj:
+                raise ValueError(f'View with that path does not exists: {view}')
+            view = view_obj
+
+        state = await self.get_current_state(user)
+
+        if state.current_view:
+            await state.current_view.destroy(user)
+
+        await view.initialize(user)
+        state.current_view = view
 
     @_middlewares(content_type=ContentType.CALLBACK)
     async def route_callback(self, *args, **kwargs):

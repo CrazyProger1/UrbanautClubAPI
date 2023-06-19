@@ -10,5 +10,8 @@ class MainView(View):
         default = True
         path = 'main'
 
-    async def handle_command(self, command: types.Message, *args, user: TelegramUser, **kwargs):
-        print(user)
+    async def initialize(self, user: TelegramUser):
+        pass
+
+    async def handle_command(self, command: types.Message, user: TelegramUser, **kwargs):
+        print(command, user, kwargs)

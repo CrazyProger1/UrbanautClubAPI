@@ -17,10 +17,17 @@ class View(metaclass=cls_utils.SingletonMeta):
             if view.Meta.default:
                 return view()
 
-    async def initialize(self):
+    @classmethod
+    @functools.cache
+    def get(cls, path: str) -> Optional["View"]:
+        for view in cls_utils.iter_subclasses(cls):
+            if view.Meta.path == path:
+                return view()
+
+    async def initialize(self, user):
         pass
 
-    async def destroy(self):
+    async def destroy(self, user):
         pass
 
     async def handle_callback(self, *args, **kwargs):

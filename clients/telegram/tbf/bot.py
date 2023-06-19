@@ -46,9 +46,17 @@ class Bot(metaclass=SingletonMeta):
             callback=self._handle_callback
         )
 
+    def initialize(self):
+        pass
+
+    def destroy(self):
+        pass
+
     def run(self):
+        self.initialize()
         self._register_handlers()
         aiogram.executor.start_polling(
             dispatcher=self._aiogram_dispatcher,
             skip_updates=True
         )
+        self.destroy()
