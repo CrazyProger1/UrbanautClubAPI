@@ -12,7 +12,17 @@ class Router(metaclass=cls_utils.SingletonMeta):
     def __init__(self, aiogram_bot: aiogram.Bot):
         self._aiogram_bot = aiogram_bot
         self._user_states = {}
+        self._middleware_list = None
+
+        self._initialize_middlewares()
+        self._initialize_views()
+
+    def _initialize_middlewares(self):
         self._middleware_list = list(map(lambda m: m(self._aiogram_bot), cls_utils.iter_subclasses(Middleware)))
+
+    def _initialize_views(self):
+        for view in cls_utils.iter_subclasses(View):
+            view(self._aiogram_bot, self.set_view)
 
     @staticmethod
     def _middlewares(content_type: ContentType):
@@ -48,12 +58,18 @@ class Router(metaclass=cls_utils.SingletonMeta):
             await self.set_view(user, View.get_default())
             return self._user_states[user]
 
-    async def set_view(self, user, view: str | View):
+    async def set_view(self, user, view: str | View | type[View]):
         if isinstance(view, str):
             view_obj = View.get(view)
             if not view_obj:
                 raise ValueError(f'View with that path does not exists: {view}')
             view = view_obj
+
+        if not isinstance(view, View):
+            if issubclass(view, View):
+                view = view()
+            else:
+                raise ValueError('View must be a type of View or instance of View or View path')
 
         state = await self.get_current_state(user)
 
