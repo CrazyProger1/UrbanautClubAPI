@@ -5,7 +5,8 @@ from utils import cls_utils
 from .view import View
 from .state import UserState
 from .enums import ContentType
-from .middleware import Middleware
+from .middlewares import Middleware
+from .models import TelegramUser
 
 
 class Router(metaclass=cls_utils.SingletonMeta):
@@ -46,11 +47,11 @@ class Router(metaclass=cls_utils.SingletonMeta):
 
         return decorator
 
-    async def get_current_view(self, user) -> View:
+    async def get_current_view(self, user: TelegramUser) -> View:
         state = await self.get_current_state(user)
         return state.current_view
 
-    async def get_current_state(self, user) -> UserState:
+    async def get_current_state(self, user: TelegramUser) -> UserState:
         try:
             return self._user_states[user]
         except KeyError:
@@ -58,7 +59,7 @@ class Router(metaclass=cls_utils.SingletonMeta):
             await self.set_view(user, View.get_default())
             return self._user_states[user]
 
-    async def set_view(self, user, view: str | View | type[View]):
+    async def set_view(self, user: TelegramUser, view: str | View | type[View]):
         if isinstance(view, str):
             view_obj = View.get(view)
             if not view_obj:

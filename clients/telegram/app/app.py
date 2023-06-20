@@ -1,6 +1,6 @@
 from tbf.bot import Bot
+from tbf.middlewares import *
 from .views import *
-from .middlewares import *
 from .models import *
 from database.database import connection
 

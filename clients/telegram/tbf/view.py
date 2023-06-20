@@ -71,13 +71,13 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         await self.async_publish(self.Event.DESTROY, user)
 
     async def handle_callback(self, *args, **kwargs):
-        await self.async_publish(self.Event.CALLBACK, args, kwargs)
+        await self.async_publish(self.Event.CALLBACK, *args, **kwargs)
 
     async def handle_message(self, *args, **kwargs):
-        await self.async_publish(self.Event.MESSAGE, args, kwargs)
+        await self.async_publish(self.Event.MESSAGE, *args, **kwargs)
 
     async def handle_media(self, *args, **kwargs):
-        await self.async_publish(self.Event.MEDIA, args, kwargs)
+        await self.async_publish(self.Event.MEDIA, *args, **kwargs)
 
     async def handle_command(self, *args, **kwargs):
-        await self.async_publish(self.Event.COMMAND, args, kwargs)
+        await self.async_publish(self.Event.COMMAND, *args, **kwargs)
