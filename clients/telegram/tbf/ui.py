@@ -22,11 +22,16 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
         self._sender = Sender()
-        self._view = None
         super(UIObject, self).__init__()
 
-    def set_parent_view(self, view):
-        self._view = view
+    @classmethod
+    def set_parent_view(cls, view):
+        cls._view = view
+
+    @classmethod
+    @property
+    def parent_view(cls):
+        return getattr(cls, '_view', None)
 
     async def show(self, user: TelegramUser):
         await self.async_publish(self.Event.SHOW, user)
