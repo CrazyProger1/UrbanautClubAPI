@@ -22,6 +22,7 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
         self._sender = Sender()
+        self._visible = False
         super(UIObject, self).__init__()
 
     @classmethod
@@ -35,6 +36,15 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     async def show(self, user: TelegramUser):
         await self.async_publish(self.Event.SHOW, user)
+        self._visible = True
 
     async def hide(self, user: TelegramUser):
         await self.async_publish(self.Event.HIDE, user)
+        self._visible = False
+
+    def is_visible(self) -> bool:
+        return self._visible
+
+    @property
+    def visible(self) -> bool:
+        return self._visible

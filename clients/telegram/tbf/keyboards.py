@@ -117,13 +117,14 @@ class ReplyKeyboard(Keyboard):
             await super(ReplyKeyboard, self).hide(user)
 
     async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
-        text = message.text
-        button = self.get_translation_key_pairs(language=user.language).get(text)
+        if self.visible:
+            text = message.text
+            button = self.get_translation_key_pairs(language=user.language).get(text)
 
-        if button:
-            await self.async_publish(
-                self.Event.BUTTON_PRESSED,
-                button=button,
-                user=user,
-                message=message
-            )
+            if button:
+                await self.async_publish(
+                    self.Event.BUTTON_PRESSED,
+                    button=button,
+                    user=user,
+                    message=message
+                )
