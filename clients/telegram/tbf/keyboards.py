@@ -2,14 +2,16 @@ import functools
 
 from enum import Enum
 from utils import cls_utils, events
+from .models import Language
+from .ui import UIObject
 
 
-class Keyboard(events.EventChannel, metaclass=cls_utils.SingletonMeta):
+class Keyboard(UIObject):
     class Event(Enum):
-        BUTTON_PRESSED = 1
+        INITIALIZE = 1
+        DESTROY = 2
+        BUTTON_PRESSED = 3
 
     @functools.cache
-    def get_markup(self, language):
+    def get_markup(self, language: Language):
         raise NotImplementedError
-
-    
