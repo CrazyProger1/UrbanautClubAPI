@@ -7,9 +7,14 @@ from aiogram import types
 from utils import cls_utils, string, events
 from .ui import UIObject
 from .models import TelegramUser, Language
+from .keyboards import Keyboard
 
 
 class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
+    keyboard_classes: tuple[type[Keyboard]] = (
+
+    )
+
     class Meta:
         default = False
         path = ''
@@ -25,8 +30,14 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot, set_view_callback: Callable):
         self._aiogram_bot = bot
         self._set_view = set_view_callback
-        self._attached_objects = []
+        self._attached_objects: list[UIObject] = []
+
         super(View, self).__init__()
+        self._attach_keyboards()
+
+    def _attach_keyboards(self):
+        for keyboard in self.keyboard_classes:
+            self.attach(keyboard(self._aiogram_bot))
 
     async def _initialize_objects(self, user: TelegramUser):
         for obj in self._attached_objects:
@@ -36,11 +47,24 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         for obj in self._attached_objects:
             await obj.destroy(user)
 
+    async def _show_objects(self, user: TelegramUser):
+        for obj in self._attached_objects:
+            if getattr(obj.Meta, 'autoshow', False):
+                await obj.show(user)
+
+    async def _hide_objects(self, user: TelegramUser):
+        for obj in self._attached_objects:
+            if getattr(obj.Meta, 'autohide', False):
+                await obj.hide(user)
+
+    def get_attached(self) -> tuple[UIObject]:
+        return tuple(self._attached_objects)
+
     def attach(self, obj: UIObject):
         if obj not in self._attached_objects:
             self._attached_objects.append(obj)
 
-    def detach(self, obj: type[UIObject]):
+    def detach(self, obj: UIObject):
         if obj in self._attached_objects:
             self._attached_objects.remove(obj)
 
@@ -86,9 +110,11 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     async def initialize(self, user: TelegramUser):
         await self.async_publish(self.Event.INITIALIZE, user)
         await self._initialize_objects(user)
+        await self._show_objects(user)
 
     async def destroy(self, user: TelegramUser):
         await self.async_publish(self.Event.DESTROY, user)
+        await self._hide_objects(user)
 
     async def handle_callback(self, *args, **kwargs):
         await self.async_publish(self.Event.CALLBACK, *args, **kwargs)

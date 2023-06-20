@@ -1,8 +1,13 @@
 from tbf.view import View
 from aiogram import types
+from .keyboards import MainKeyboard
 
 
 class MainView(View):
+    keyboard_classes = (
+        MainKeyboard,
+    )
+
     class Meta:
         default = True
         path = 'main'
