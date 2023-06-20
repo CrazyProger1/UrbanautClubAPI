@@ -48,16 +48,9 @@ class Router(metaclass=cls_utils.SingletonMeta):
         return decorator
 
     async def get_current_view(self, user: TelegramUser) -> View:
-        state = await self.get_current_state(user)
-        return state.current_view
-
-    async def get_current_state(self, user: TelegramUser) -> UserState:
-        try:
-            return self._user_states[user]
-        except KeyError:
-            self._user_states[user] = UserState(user, None)
+        if not user.state.current_view:
             await self.set_view(user, View.get_default())
-            return self._user_states[user]
+        return user.state.current_view
 
     async def set_view(self, user: TelegramUser, view: str | View | type[View]):
         if isinstance(view, str):
@@ -72,30 +65,29 @@ class Router(metaclass=cls_utils.SingletonMeta):
             else:
                 raise ValueError('View must be a type of View or instance of View or View path')
 
-        state = await self.get_current_state(user)
+        if user.state.current_view:
+            await user.state.current_view.async_publish(view.Event.DESTROY, user)
 
-        if state.current_view:
-            await state.current_view.destroy(user)
+        await view.async_publish(view.Event.INITIALIZE, user)
 
-        await view.initialize(user)
-        state.current_view = view
+        user.state.current_view = view
 
     @_middlewares(content_type=ContentType.CALLBACK)
     async def route_callback(self, *args, **kwargs):
         view = await self.get_current_view(kwargs.get('user'))
-        await view.handle_callback(*args, **kwargs)
+        await view.async_publish(view.Event.CALLBACK, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MESSAGE)
     async def route_message(self, *args, **kwargs):
         view = await self.get_current_view(kwargs.get('user'))
-        await view.handle_message(*args, **kwargs)
+        await view.async_publish(view.Event.MESSAGE, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.COMMAND)
     async def route_command(self, *args, **kwargs):
         view = await self.get_current_view(kwargs.get('user'))
-        await view.handle_command(*args, **kwargs)
+        await view.async_publish(view.Event.COMMAND, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MEDIA)
     async def route_media(self, *args, **kwargs):
         view = await self.get_current_view(kwargs.get('user'))
-        await view.handle_media(*args, **kwargs)
+        await view.async_publish(view.Event.MEDIA, *args, **kwargs)

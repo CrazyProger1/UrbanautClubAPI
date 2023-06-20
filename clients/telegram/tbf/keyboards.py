@@ -1,5 +1,7 @@
 import functools
 
+import aiogram
+from aiogram import types
 from enum import Enum
 from utils import cls_utils, events
 from .models import Language, TelegramUser
@@ -22,7 +24,9 @@ class Keyboard(UIObject):
         DESTROY = 2
         SHOW = 3
         HIDE = 4
-        BUTTON_PRESSED = 5
+        ATTACH = 5
+        DETACH = 6
+        BUTTON_PRESSED = 7
 
     @functools.cache
     def get_markup(self, language: Language):

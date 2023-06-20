@@ -45,6 +45,6 @@ class EventChannel:
             for callback in self._subscribers[event]:
 
                 if callback.__self__ != self:
-                    args.append(self)
+                    args.insert(0, self)
 
                 await callback(*args, **kwargs)

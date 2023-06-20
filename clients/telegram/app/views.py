@@ -14,7 +14,8 @@ class MainView(View):
 
     def __init__(self, *args, **kwargs):
         super(MainView, self).__init__(*args, **kwargs)
-        self.subscribe(self.Event.MESSAGE, self.on_message)
+        keyboard = MainKeyboard()
+        keyboard.subscribe(keyboard.Event.BUTTON_PRESSED, self.on_search_objects)
 
-    async def on_message(self, message: types.Message, *args, **kwargs):
-        await message.reply(message.text)
+    async def on_search_objects(self, *args, **kwargs):
+        print('YEEA')

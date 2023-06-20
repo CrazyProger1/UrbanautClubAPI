@@ -8,6 +8,7 @@ from utils import cls_utils, string, events
 from .ui import UIObject
 from .models import TelegramUser, Language
 from .keyboards import Keyboard
+from .sender import Sender
 
 
 class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
@@ -29,11 +30,25 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     def __init__(self, bot: aiogram.Bot, set_view_callback: Callable):
         self._aiogram_bot = bot
+        self._sender = Sender()
         self._set_view = set_view_callback
         self._attached_objects: list[UIObject] = []
 
         super(View, self).__init__()
+
         self._attach_keyboards()
+        self._subscribe_on_events()
+
+    def _subscribe_on_events(self):
+        self.subscribe(self.Event.INITIALIZE, self._initialize)
+        self.subscribe(self.Event.DESTROY, self._destroy)
+
+    async def _initialize(self, user: TelegramUser):
+        await self._initialize_objects(user)
+        await self._show_objects(user)
+
+    async def _destroy(self, user: TelegramUser):
+        await self._hide_objects(user)
 
     def _attach_keyboards(self):
         for keyboard in self.keyboard_classes:
@@ -41,11 +56,11 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     async def _initialize_objects(self, user: TelegramUser):
         for obj in self._attached_objects:
-            await obj.initialize(user)
+            await obj.async_publish(obj.Event.INITIALIZE, user)
 
     async def _destroy_objects(self, user: TelegramUser):
         for obj in self._attached_objects:
-            await obj.destroy(user)
+            await obj.async_publish(obj.Event.DESTROY, user)
 
     async def _show_objects(self, user: TelegramUser):
         for obj in self._attached_objects:
@@ -62,10 +77,13 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     def attach(self, obj: UIObject):
         if obj not in self._attached_objects:
+            obj.set_parent_view(self)
+            obj.publish(obj.Event.ATTACH)
             self._attached_objects.append(obj)
 
     def detach(self, obj: UIObject):
         if obj in self._attached_objects:
+            obj.publish(obj.Event.DETACH)
             self._attached_objects.remove(obj)
 
     async def back(self, user: TelegramUser):
@@ -106,24 +124,3 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         for view in cls_utils.iter_subclasses(cls):
             if view.Meta.path == path:
                 return view()
-
-    async def initialize(self, user: TelegramUser):
-        await self.async_publish(self.Event.INITIALIZE, user)
-        await self._initialize_objects(user)
-        await self._show_objects(user)
-
-    async def destroy(self, user: TelegramUser):
-        await self.async_publish(self.Event.DESTROY, user)
-        await self._hide_objects(user)
-
-    async def handle_callback(self, *args, **kwargs):
-        await self.async_publish(self.Event.CALLBACK, *args, **kwargs)
-
-    async def handle_message(self, *args, **kwargs):
-        await self.async_publish(self.Event.MESSAGE, *args, **kwargs)
-
-    async def handle_media(self, *args, **kwargs):
-        await self.async_publish(self.Event.MEDIA, *args, **kwargs)
-
-    async def handle_command(self, *args, **kwargs):
-        await self.async_publish(self.Event.COMMAND, *args, **kwargs)

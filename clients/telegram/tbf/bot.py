@@ -6,6 +6,7 @@ from aiogram import types
 from enum import Enum
 from conf import settings
 from .router import Router
+from .sender import Sender
 
 
 class Bot(events.EventChannel, metaclass=cls_utils.SingletonMeta):
@@ -16,6 +17,7 @@ class Bot(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self):
         self._aiogram_bot = aiogram.Bot(token=settings.BOT.TOKEN)
         self._aiogram_dispatcher = aiogram.Dispatcher(bot=self._aiogram_bot)
+        self._sender = Sender(self._aiogram_bot)
         self._router = Router(self._aiogram_bot)
         super(Bot, self).__init__()
 
