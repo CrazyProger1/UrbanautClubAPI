@@ -14,8 +14,8 @@ class Language(Model):
     @staticmethod
     @functools.cache
     def get_default():
-        return Language.get_or_create(short_name='en', full_name='English')[0]
-        # return Languages.get_by_id('en')
+        # return Language.get_or_create(short_name='en')[0]
+        return Language.get_by_id('en')
 
 
 class TelegramUser(Model):

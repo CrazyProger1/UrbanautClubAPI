@@ -23,14 +23,14 @@ def check_folder(path: str):
         raise ValueError(f'Not a folder: {path}')
 
 
-def read(path: str, mode: str = 'r'):
+def read(path: str, mode: str = 'r', encoding: str = None):
     check_file(path)
-    with open(path, mode) as f:
+    with open(path, mode, encoding=encoding) as f:
         return f.read()
 
 
-def write(path: str, data: bytes | str, mode: str = 'w'):
-    with open(path, mode) as f:
+def write(path: str, data: bytes | str, mode: str = 'w', encoding: str = None):
+    with open(path, mode, encoding=encoding) as f:
         return f.write(data)
 
 

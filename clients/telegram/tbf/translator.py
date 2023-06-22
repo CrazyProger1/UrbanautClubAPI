@@ -1,6 +1,6 @@
 import functools
 import gettext
-
+import os
 from conf import settings
 from .models import TelegramUser, Language
 from utils import filesystem, cls_utils
@@ -10,7 +10,35 @@ class Translator(metaclass=cls_utils.SingletonMeta):
     def __init__(self, domain: str = None):
         self._domain = domain
         self._loaded_packs: dict[str, gettext.GNUTranslations] = {}
+        self._translation_files_content = {}
         self._load()
+
+    @functools.cache
+    def _get_translation_file_path(self, language: Language):
+        return os.path.join(
+            settings.L18N.LOCALE_FOLDER,
+            language.short_name,
+            'LC_MESSAGES',
+            self._domain + '.po'
+        )
+
+    def _read_translation_file(self, language: Language):
+        self._translation_files_content[language.short_name] = filesystem.read(
+            self._get_translation_file_path(language),
+            encoding='utf-8'
+        )
+
+    @functools.cache
+    def _update_translation_file(self, language: Language, key: str):
+        self._translation_files_content[language.short_name] += f'''
+msgid "{key}"
+msgstr "{key}"
+'''
+        filesystem.write(
+            self._get_translation_file_path(language),
+            self._translation_files_content[language.short_name],
+            encoding='utf-8'
+        )
 
     def _load(self):
         for language in Language.select():
@@ -21,6 +49,8 @@ class Translator(metaclass=cls_utils.SingletonMeta):
                         localedir=settings.L18N.LOCALE_FOLDER,
                         languages=[language.short_name]
                     )})
+                if settings.L18N.UPDATE_TRANSLATIONS:
+                    self._read_translation_file(language)
             except FileNotFoundError:
                 if settings.DEBUG:
                     continue
@@ -41,9 +71,13 @@ class Translator(metaclass=cls_utils.SingletonMeta):
             language = Language.get_default()
 
         lang_name = language.short_name
-
         try:
-            return self._loaded_packs[lang_name].gettext(key)
+            translation = self._loaded_packs[lang_name].gettext(key)
+            print(key, translation, language)
+
+            if settings.L18N.TRACK_SOURCES and translation == key:
+                self._update_translation_file(language, key)
+            return translation
         except KeyError:
             return key
 
