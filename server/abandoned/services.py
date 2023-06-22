@@ -1,3 +1,4 @@
+import cities_light
 from abandoned.models import AbandonedObject, AbandonedObjectCategory
 
 

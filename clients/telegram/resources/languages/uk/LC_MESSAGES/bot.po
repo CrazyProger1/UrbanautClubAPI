@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-06-22 14:21+0300\n"
+"PO-Revision-Date: 2023-06-22 14:49+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -159,3 +159,15 @@ msgstr "Введіть @нікнейм_користувача🧑‍💻"
 
 msgid "keyboards.main.buttons.search_objects"
 msgstr "Шукати пустки"
+
+msgid "keyboards.main.caption"
+msgstr "Привіт!"
+
+msgid "keyboards.search.buttons.all"
+msgstr "Всі пустки"
+
+msgid "keyboards.common.back"
+msgstr "Назад⬅️"
+
+msgid "keyboards.search.caption"
+msgstr "Меню пошуку пусток"

@@ -3,7 +3,7 @@ from tbf.view import View
 from tbf.models import *
 from aiogram import types
 from .keyboards import *
-from .managers import AbandonedObjectAPIManager
+from .managers import AbandonedObjectAPIManager, AbandonedObjectCategoryAPIManager
 from .models import *
 
 
@@ -42,6 +42,9 @@ class SearchObjectsView(View):
         self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
 
     async def send_all_objects(self, user: TelegramUser):
+        # for category in await AbandonedObjectCategoryAPIManager.list_paginated():
+        #     category.save(force_insert=True)
+
         for obj in await AbandonedObjectAPIManager.list_paginated():
             obj: AbandonedObject
             states = {
@@ -60,7 +63,7 @@ class SearchObjectsView(View):
 <i>Description:</i> {aiogram.utils.markdown.quote_html(obj.description)}
 <i>Category:</i> {obj.category}
 <i>State:</i> {states[obj.state]}
-<i>Address:</i> {address.country}, {address.city}, {address.street}, {address.street_number}
+<i>Address:</i> {address.country}, {address.region}, {address.city}, {address.street}, {address.street_number}
 <i>Coordinates:</i> {coordinates.latitude}x{coordinates.longitude}
 ''')
 

@@ -20,6 +20,7 @@ class Address(Model):
     id = peewee.IntegerField(primary_key=True)
     country = peewee.CharField(max_length=100, null=True)
     city = peewee.CharField(max_length=100, null=True)
+    region = peewee.CharField(max_length=100, null=True)
     street = peewee.CharField(max_length=100, null=True)
     street_number = peewee.CharField(max_length=4, null=True)
     zipcode = peewee.CharField(max_length=10, null=True)
@@ -44,5 +45,3 @@ class AbandonedObject(Model):
     # category = peewee.ForeignKeyField(AbandonedObjectCategory, field='name')
     state = peewee.CharField(max_length=1)
     location = peewee.ForeignKeyField(AbandonedObjectLocation)
-
-

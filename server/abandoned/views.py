@@ -23,5 +23,4 @@ class AbandonedObjectRetrieveAPIView(generics.RetrieveAPIView):
 class AbandonedObjectCategoryListAPIView(generics.ListAPIView):
     queryset = get_all_categories()
     serializer_class = AbandonedObjectCategorySerializer
-
-
+    filter_backends = (filters.DjangoFilterBackend,)

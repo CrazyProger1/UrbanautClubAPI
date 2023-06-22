@@ -7,6 +7,11 @@ class AbandonedObjectSerializer(Serializer):
         model = AbandonedObject
 
 
+class AbandonedObjectCategorySerializer(Serializer):
+    class Meta:
+        model = AbandonedObjectCategory
+
+
 class AbandonedObjectLocationSerializer(Serializer):
     class Meta:
         model = AbandonedObjectLocation

@@ -9,9 +9,22 @@ class CoordinatesSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    city = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    region = serializers.SerializerMethodField()
+
     class Meta:
         model = Address
         fields = '__all__'
+
+    def get_city(self, obj):
+        return obj.city.name
+
+    def get_country(self, obj):
+        return obj.country.name
+
+    def get_region(self, obj):
+        return obj.city.region.name
 
 
 class AbandonedObjectLocationSerializer(serializers.ModelSerializer):

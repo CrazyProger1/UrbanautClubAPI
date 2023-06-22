@@ -73,12 +73,10 @@ msgstr "{key}"
         lang_name = language.short_name
         try:
             translation = self._loaded_packs[lang_name].gettext(key)
-            print(key, translation, language)
-
-            if settings.L18N.TRACK_SOURCES and translation == key:
+            if settings.L18N.UPDATE_TRANSLATIONS and translation == key:
                 self._update_translation_file(language, key)
             return translation
-        except KeyError:
+        except KeyError as e:
             return key
 
 
