@@ -9,7 +9,7 @@ FILES = {
 
 env_conf = ENVConfig.load(FILES['ENV_CONFIG_FILE'])
 
-DEBUG = False
+DEBUG = True
 
 APP = {
     'NAME': 'PC-Alarm',
@@ -57,7 +57,6 @@ MIDDLEWARES = [
     'app.bot.middlewares.AuthMiddleware',
     'app.bot.middlewares.PermissionMiddleware',
 ]
-
 
 MESSAGES = {
     'PARSE_MODE': types.ParseMode.HTML
