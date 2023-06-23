@@ -30,7 +30,7 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     def __init__(self, bot: aiogram.Bot, set_view_callback: Callable):
         self._aiogram_bot = bot
-        self._sender = Sender()
+        self.sender = Sender()
         self._set_view = set_view_callback
         self._attached_objects: list[UIObject] = []
 

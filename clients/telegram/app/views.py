@@ -1,4 +1,5 @@
 import aiogram
+from tbf.translator import _
 from tbf.view import View
 from tbf.models import *
 from aiogram import types
@@ -41,35 +42,53 @@ class SearchObjectsView(View):
         self.kb = SearchObjectsKeyboard()
         self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
 
-    async def send_all_objects(self, user: TelegramUser):
-        # for category in await AbandonedObjectCategoryAPIManager.list_paginated():
-        #     category.save(force_insert=True)
-
-        for obj in await AbandonedObjectAPIManager.list_paginated():
-            obj: AbandonedObject
-            states = {
-                'd': 'dangerous',
-                'b': 'bad',
-                'a': 'average',
-                'g': 'good',
-                'n': 'novelty'
-            }
-            location: AbandonedObjectLocation = obj.location
-            coordinates: Coordinates = location.coordinates
-            address: Address = location.address
-            await self._sender.send_message(user, f'''
-<b>{aiogram.utils.markdown.quote_html(obj.name)}</b>
-
-<i>Description:</i> {aiogram.utils.markdown.quote_html(obj.description)}
-<i>Category:</i> {obj.category}
-<i>State:</i> {states[obj.state]}
-<i>Address:</i> {address.country}, {address.region}, {address.city}, {address.street}, {address.street_number}
-<i>Coordinates:</i> {coordinates.latitude}x{coordinates.longitude}
-''')
-
-    async def on_button_pressed(self, keyboard: ReplyKeyboard, *args, button: str, user: TelegramUser, **kwargs):
-        if 'back' in button:
+    async def on_button_pressed(self, keyboard: ReplyKeyboard, *, button: str, user: TelegramUser, **kwargs):
+        if 'all' in button:
+            await self.next(user, AllObjectsView)
+        elif 'back' in button:
             await self.back(user)
 
-        if 'all' in button:
-            await self.send_all_objects(user)
+
+class AllObjectsView(View):
+    keyboard_classes = (
+        AllObjectsNavKeyboard,
+    )
+
+    class Meta:
+        default = False
+        path = 'main.search.all'
+
+    def __init__(self, *args, **kwargs):
+        super(AllObjectsView, self).__init__(*args, **kwargs)
+        self.kb = AllObjectsNavKeyboard()
+        self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
+        self.subscribe(self.Event.INITIALIZE, self.on_initialize)
+
+    async def send_object(self, user: TelegramUser, obj: AbandonedObject):
+        await self.sender.send_message(
+            user,
+            _(
+                'contents.objects.object_form',
+                user
+            ).format(
+                name=obj.name,
+                desc=obj.description,
+                category=_(f'contents.objects.categories.{obj.category}', user, default=obj.category),
+                state=_(f'contents.objects.states.{obj.state}', user),
+                address=None,
+                latitude=obj.location.coordinates.latitude,
+                longitude=obj.location.coordinates.longitude
+            )
+
+        )
+
+    async def send_all_objects(self, user: TelegramUser):
+        for obj in await AbandonedObjectAPIManager.list_paginated():
+            await self.send_object(user, obj)
+
+    async def on_initialize(self, user: TelegramUser):
+        await self.send_all_objects(user)
+
+    async def on_button_pressed(self, keyboard: ReplyKeyboard, *, button: str, user: TelegramUser, **kwargs):
+        if 'back' in button:
+            await self.back(user)

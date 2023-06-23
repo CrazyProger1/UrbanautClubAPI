@@ -61,7 +61,8 @@ msgstr "{key}"
             self,
             key: str,
             user: TelegramUser = None,
-            language: Language = None
+            language: Language = None,
+            default: str = None,
     ) -> str:
 
         if not language and user:
@@ -73,14 +74,16 @@ msgstr "{key}"
         lang_name = language.short_name
         try:
             translation = self._loaded_packs[lang_name].gettext(key)
-            if settings.L18N.UPDATE_TRANSLATIONS and translation == key:
-                self._update_translation_file(language, key)
+            if translation == key:
+                if settings.L18N.UPDATE_TRANSLATIONS:
+                    self._update_translation_file(language, key)
+                return default or translation
             return translation
         except KeyError as e:
             return key
 
 
 @functools.cache
-def _(key: str, user: TelegramUser = None, language: Language = None):
+def _(key: str, user: TelegramUser = None, language: Language = None, default: str = None) -> str:
     translator = Translator()
-    return translator.translate(key, user, language)
+    return translator.translate(key, user, language, default=default)

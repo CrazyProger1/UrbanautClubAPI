@@ -22,3 +22,17 @@ class SearchObjectsKeyboard(ReplyKeyboard):
         caption_key = 'keyboards.search.caption'
         autoshow = True
         autohide = True
+
+
+class AllObjectsNavKeyboard(ReplyKeyboard):
+    row_width = 2
+    button_keys = (
+        'keyboards.common.prev',
+        'keyboards.common.next',
+        'keyboards.common.back',
+    )
+
+    class Meta:
+        caption_key = 'keyboards.search.all.caption'
+        autoshow = True
+        autohide = True
