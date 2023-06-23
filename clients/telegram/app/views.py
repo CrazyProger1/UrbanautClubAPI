@@ -99,12 +99,15 @@ class AddObjectView(View):
     keyboard_classes = (
         AddObjectKeyboard,
         AddObjectConfirmationKeyboard,
-        SelectObjectCategoryKeyboard
+        SelectObjectCategoryKeyboard,
+        SelectObjectStateKeyboard
     )
     steps = [
         'contents.objects.creation.name',
         'contents.objects.creation.description',
-        'category'
+        'category',
+        'state',
+        'contents.objects.creation.coordinates'
     ]
 
     class Meta:
@@ -139,6 +142,8 @@ class AddObjectView(View):
 
         if curr_step == 2:
             await SelectObjectCategoryKeyboard().show(user)
+        elif curr_step == 3:
+            await SelectObjectStateKeyboard().show(user)
         else:
             await self.sender.send_message(
                 user,
@@ -163,10 +168,11 @@ class AddObjectView(View):
                 user.state.object_creation_buffer['name'] = message.text
             case 2:
                 user.state.object_creation_buffer['description'] = message.text
-            case 3:
-                user.state.object_creation_buffer['category'] = None
-
-        await self.next_step(user)
+            case 5:
+                user.state.object_creation_buffer['latitude'], user.state.object_creation_buffer[
+                    'longitude'] = message.text.split('x')
+        if step < 3 or step > 4:
+            await self.next_step(user)
 
     async def cancel(self, user: TelegramUser):
         user.state.object_creation_buffer = None
@@ -199,4 +205,8 @@ class AddObjectView(View):
             if isinstance(keyboard, SelectObjectCategoryKeyboard):
                 user.state.object_creation_buffer['category'] = button.rsplit('.', maxsplit=1)[1]
                 await SelectObjectCategoryKeyboard().hide(user)
+                await self.next_step(user)
+            elif isinstance(keyboard, SelectObjectStateKeyboard):
+                user.state.object_creation_buffer['state'] = button.rsplit('.', maxsplit=1)[1]
+                await SelectObjectStateKeyboard().hide(user)
                 await self.next_step(user)

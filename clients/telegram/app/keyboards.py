@@ -79,10 +79,10 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
             name=data['name'],
             desc=data['description'],
             category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
-            state=None,
+            state=_(f'contents.objects.states.{data["state"]}', user),
             address=None,
-            latitude=None,
-            longitude=None
+            latitude=data['latitude'],
+            longitude=data['longitude']
         )
 
 
@@ -106,3 +106,17 @@ class SelectObjectCategoryKeyboard(InlineKeyboard):
             )
 
         return categories
+
+
+class SelectObjectStateKeyboard(InlineKeyboard):
+    row_width = 1
+    button_keys = (
+        'contents.objects.states.d',
+        'contents.objects.states.b',
+        'contents.objects.states.a'
+    )
+
+    class Meta:
+        caption_key = 'keyboards.add_object.select_state.caption'
+        autoshow = False
+        autohide = True
