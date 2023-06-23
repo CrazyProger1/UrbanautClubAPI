@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-06-23 13:59+0300\n"
+"PO-Revision-Date: 2023-06-23 15:35+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -17,19 +17,19 @@ msgstr ""
 "X-Generator: Poedit 3.2.2\n"
 
 msgid "keyboards.main.buttons.search_objects"
-msgstr "Шукати пустки"
+msgstr "Шукати пустки🔎"
 
 msgid "keyboards.main.caption"
-msgstr "Привіт!"
+msgstr "Головне меню🤖"
 
 msgid "keyboards.search.buttons.all"
-msgstr "Всі пустки"
+msgstr "Всі пустки🔦"
 
 msgid "keyboards.common.back"
 msgstr "Назад⬅️"
 
 msgid "keyboards.search.caption"
-msgstr "Меню пошуку пусток"
+msgstr "Меню пошуку пусток🏗🏭🏢🏫"
 
 msgid "contents.objects.object_form"
 msgstr ""
@@ -48,31 +48,40 @@ msgid "keyboards.common.next"
 msgstr "➡️"
 
 msgid "keyboards.search.all.caption"
-msgstr "Всі пустки"
+msgstr "Всі пустки🔦"
 
 msgid "contents.objects.categories.School"
-msgstr "Школа"
+msgstr "Школа🏫"
 
 msgid "contents.objects.states.b"
-msgstr "Поганий"
+msgstr "Поганий🟠"
 
 msgid "contents.objects.categories.Bunker entrance"
-msgstr "Вхід у бункер"
+msgstr "Вхід у бункер🗻"
 
 msgid "contents.objects.states.d"
-msgstr "Небезпечний"
+msgstr "Небезпечний🔴"
 
 msgid "keyboards.main.buttons.add_object"
-msgstr "Додати пустку"
+msgstr "Додати пустку➕"
 
 msgid "contents.objects.creation.name"
-msgstr "Введіть ім'я пустки"
+msgstr "Введіть ім'я пустки🪧"
 
 msgid "contents.objects.creation.description"
-msgstr "Введіть опис пустки"
+msgstr "Введіть опис пустки📝"
 
 msgid "keyboards.common.cancel"
-msgstr "Скасувати"
+msgstr "Скасувати❌"
 
 msgid "keyboards.add_object.caption"
-msgstr "Додавання пустки"
+msgstr "Додавання пустки🏗🏭🏢🏫"
+
+msgid "keyboards.common.create"
+msgstr "Створити✅"
+
+msgid "keyboards.add_object.select_category.caption"
+msgstr "Оберіть категорію пустки🏗🏭🏢🏫"
+
+msgid "contents.objects.created"
+msgstr "Пустку додано✅"

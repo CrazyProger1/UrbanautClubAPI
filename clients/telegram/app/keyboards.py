@@ -1,4 +1,9 @@
+import functools
+
 from tbf.keyboards import ReplyKeyboard, InlineKeyboard
+from tbf.models import TelegramUser
+from tbf.translator import _
+from .models import AbandonedObjectCategory
 
 
 class MainKeyboard(ReplyKeyboard):
@@ -55,7 +60,7 @@ class AddObjectKeyboard(ReplyKeyboard):
 class AddObjectConfirmationKeyboard(InlineKeyboard):
     row_width = 2
     button_keys = (
-        'keyboards.common.apply',
+        'keyboards.common.create',
         'keyboards.common.cancel',
     )
 
@@ -63,3 +68,41 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
         caption_key = 'keyboards.add_object.confirmation.caption'
         autoshow = False
         autohide = True
+
+    def get_caption(self, user: TelegramUser):
+        data = user.state.object_creation_buffer
+
+        return _(
+            'contents.objects.object_form',
+            user
+        ).format(
+            name=data['name'],
+            desc=data['description'],
+            category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
+            state=None,
+            address=None,
+            latitude=None,
+            longitude=None
+        )
+
+
+class SelectObjectCategoryKeyboard(InlineKeyboard):
+    row_width = 3
+    button_keys = (
+
+    )
+
+    class Meta:
+        caption_key = 'keyboards.add_object.select_category.caption'
+        autoshow = False
+        autohide = True
+
+    @functools.cache
+    def get_button_keys(self) -> tuple[str] | list[str]:
+        categories = []
+        for category in AbandonedObjectCategory.select():
+            categories.append(
+                f'contents.objects.categories.{category.name}'
+            )
+
+        return categories

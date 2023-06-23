@@ -98,7 +98,8 @@ class AllObjectsView(View):
 class AddObjectView(View):
     keyboard_classes = (
         AddObjectKeyboard,
-        AddObjectConfirmationKeyboard
+        AddObjectConfirmationKeyboard,
+        SelectObjectCategoryKeyboard
     )
     steps = [
         'contents.objects.creation.name',
@@ -113,9 +114,10 @@ class AddObjectView(View):
     def __init__(self, *args, **kwargs):
         super(AddObjectView, self).__init__(*args, **kwargs)
         self.subscribe(self.Event.INITIALIZE, self.on_initialize)
-        AddObjectKeyboard().subscribe(AddObjectKeyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
-        AddObjectConfirmationKeyboard().subscribe(AddObjectConfirmationKeyboard.Event.BUTTON_PRESSED,
-                                                  self.on_button_pressed)
+
+        for kb_class in self.keyboard_classes:
+            kb_class().subscribe(kb_class.Event.BUTTON_PRESSED, self.on_button_pressed)
+
         self.subscribe(self.Event.MESSAGE, self.on_message)
 
     async def on_initialize(self, user: TelegramUser):
@@ -135,13 +137,16 @@ class AddObjectView(View):
         if curr_step == len(self.steps):
             return await self.ask_confirmation(user)
 
-        await self.sender.send_message(
-            user,
-            _(
-                self.steps[curr_step],
-                user
+        if curr_step == 2:
+            await SelectObjectCategoryKeyboard().show(user)
+        else:
+            await self.sender.send_message(
+                user,
+                _(
+                    self.steps[curr_step],
+                    user
+                )
             )
-        )
         user.state.object_creation_buffer['step'] += 1
 
     async def prev_step(self, user: TelegramUser):
@@ -167,6 +172,17 @@ class AddObjectView(View):
         user.state.object_creation_buffer = None
         await self.back(user)
 
+    async def create_object(self, user: TelegramUser):
+        data = user.state.object_creation_buffer
+        data.pop('step')
+
+        user.state.object_creation_buffer = None
+        await self.sender.send_message(user, _(
+            'contents.objects.created',
+            user
+        ))
+        await self.back(user)
+
     async def on_button_pressed(self, keyboard: ReplyKeyboard | InlineKeyboard, *, button: str, user: TelegramUser,
                                 **kwargs):
         if isinstance(keyboard, ReplyKeyboard):
@@ -177,5 +193,10 @@ class AddObjectView(View):
         else:
             if 'cancel' in button:
                 await self.cancel(user)
-            elif 'apply' in button:
-                print('Object creation...')
+            elif 'create' in button:
+                await self.create_object(user)
+
+            if isinstance(keyboard, SelectObjectCategoryKeyboard):
+                user.state.object_creation_buffer['category'] = button.rsplit('.', maxsplit=1)[1]
+                await SelectObjectCategoryKeyboard().hide(user)
+                await self.next_step(user)
