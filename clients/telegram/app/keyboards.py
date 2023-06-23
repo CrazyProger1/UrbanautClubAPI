@@ -4,6 +4,7 @@ from tbf.keyboards import ReplyKeyboard
 class MainKeyboard(ReplyKeyboard):
     button_keys = (
         'keyboards.main.buttons.search_objects',
+        'keyboards.main.buttons.add_object'
     )
 
     class Meta:
@@ -34,5 +35,31 @@ class AllObjectsNavKeyboard(ReplyKeyboard):
 
     class Meta:
         caption_key = 'keyboards.search.all.caption'
+        autoshow = True
+        autohide = True
+
+
+class AddObjectKeyboard(ReplyKeyboard):
+    row_width = 2
+    button_keys = (
+        'keyboards.common.back',
+        'keyboards.common.cancel',
+    )
+
+    class Meta:
+        caption_key = 'keyboards.add_object.caption'
+        autoshow = True
+        autohide = True
+
+
+class AddObjectConfirmationKeyboard(InlineKeyboard):
+    row_width = 2
+    button_keys = (
+        'keyboards.common.apply',
+        'keyboards.common.cancel',
+    )
+
+    class Meta:
+        caption_key = 'keyboards.add_object.confirmation.caption'
         autoshow = True
         autohide = True

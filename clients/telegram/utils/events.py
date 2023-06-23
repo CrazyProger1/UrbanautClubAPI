@@ -43,8 +43,10 @@ class EventChannel:
 
         if event in self._subscribers.keys():
             for callback in self._subscribers[event]:
-
+                args_copy = args.copy()
                 if callback.__self__ != self:
-                    args.insert(0, self)
+                    args_copy.insert(0, self)
 
-                await callback(*args, **kwargs)
+                res = await callback(*args_copy, **kwargs)
+                if res == 'break':
+                    return

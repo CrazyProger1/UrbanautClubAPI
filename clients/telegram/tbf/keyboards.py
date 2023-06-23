@@ -128,3 +128,8 @@ class ReplyKeyboard(Keyboard):
                     user=user,
                     message=message
                 )
+                return 'break'
+
+
+class InlineKeyboard(Keyboard):
+    pass
