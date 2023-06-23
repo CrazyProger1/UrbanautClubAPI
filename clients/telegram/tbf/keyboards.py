@@ -30,6 +30,14 @@ class Keyboard(UIObject):
         BUTTON_PRESSED = 7
 
     @functools.cache
+    def get_translation_key_pairs(self, language: Language):
+        result = {}
+        for key in self.get_button_keys():
+            translation = _(key, language=language)
+            result.update({translation: key})
+        return result
+
+    @functools.cache
     def get_button_keys(self) -> tuple[str]:
         return self.button_keys
 
@@ -61,14 +69,6 @@ class ReplyKeyboard(Keyboard):
             self.parent_view.subscribe(self.parent_view.Event.MESSAGE, self._check_pressed)
 
     @functools.cache
-    def get_translation_key_pairs(self, language: Language):
-        result = {}
-        for key in self.get_button_keys():
-            translation = _(key, language=language)
-            result.update({translation: key})
-        return result
-
-    @functools.cache
     def get_buttons(self, language: Language):
         result, row = [], []
         for button_key in self.get_button_keys():
@@ -93,7 +93,7 @@ class ReplyKeyboard(Keyboard):
     async def show(self, user: TelegramUser):
         markup = self.get_markup(language=user.language)
 
-        msg = await self._sender.send_message(
+        msg = await self.sender.send_message(
             user,
             self.get_caption(language=user.language),
             reply_markup=markup
@@ -132,4 +132,81 @@ class ReplyKeyboard(Keyboard):
 
 
 class InlineKeyboard(Keyboard):
-    pass
+    callback_data_length = 20
+
+    def __init__(self, *args, **kwargs):
+        super(InlineKeyboard, self).__init__(*args, **kwargs)
+
+        self.subscribe(self.Event.ATTACH, self._on_attach)
+
+    def _on_attach(self, *args, **kwargs):
+        if self.parent_view:
+            self.parent_view.subscribe(self.parent_view.Event.CALLBACK, self._check_pressed)
+
+    @functools.cache
+    def get_translation_key_pairs(self, language: Language):
+        result = {}
+        for key in self.get_button_keys():
+            translation = _(key, language=language)
+            result.update({translation[:self.callback_data_length]: key})
+        return result
+
+    @functools.cache
+    def get_buttons(self, language: Language) -> list[list[types.KeyboardButton | types.InlineKeyboardButton]]:
+        result, row = [], []
+        for button_key in self.get_button_keys():
+            if len(row) == self.row_width:
+                result.append(row)
+                row = []
+
+            translated = _(button_key, language=language)
+            row.append(types.InlineKeyboardButton(translated, callback_data=translated[:self.callback_data_length]))
+
+        if len(row) > 0:
+            result.append(row)
+        return result
+
+    @functools.cache
+    def get_markup(self, language: Language) -> types.ReplyKeyboardMarkup | types.InlineKeyboardMarkup:
+        markup = types.InlineKeyboardMarkup(
+            row_width=self.row_width
+        )
+        for btn_row in self.get_buttons(language=language):
+            markup.add(*btn_row)
+        return markup
+
+    async def show(self, user: TelegramUser):
+        markup = self.get_markup(language=user.language)
+        await super(InlineKeyboard, self).show(user)
+        msg = await self.sender.send_message(
+            user,
+            self.get_caption(language=user.language),
+            reply_markup=markup
+        )
+        user.state.inline_keyboard_msg_id = msg.message_id
+
+    async def hide(self, user: TelegramUser):
+        msgid = user.state.inline_keyboard_msg_id
+        if msgid:
+            try:
+                await self._aiogram_bot.delete_message(user.id, msgid)
+            except aiogram.utils.exceptions.MessageToDeleteNotFound:
+                pass
+            await super(InlineKeyboard, self).hide(user)
+
+    @functools.cache
+    def get_pressed(self, text: str, language: Language) -> str | None:
+        return self.get_translation_key_pairs(language=language).get(text)
+
+    async def _check_pressed(self, view, callback: types.CallbackQuery, user: TelegramUser, *args, **kwargs):
+        print(callback.data)
+        print(self.get_translation_key_pairs(user.language))
+        button = self.get_pressed(callback.data, user.language)
+        if button:
+            await self.async_publish(
+                self.Event.BUTTON_PRESSED,
+                button=button,
+                user=user,
+                callback=callback
+            )
+            return 'break'

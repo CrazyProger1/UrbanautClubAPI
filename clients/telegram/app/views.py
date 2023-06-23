@@ -1,10 +1,9 @@
-import aiogram
 from tbf.translator import _
 from tbf.view import View
 from tbf.models import *
 from aiogram import types
 from .keyboards import *
-from .managers import AbandonedObjectAPIManager, AbandonedObjectCategoryAPIManager
+from .managers import AbandonedObjectAPIManager
 from .models import *
 
 
@@ -20,8 +19,7 @@ class MainView(View):
     def __init__(self, *args, **kwargs):
         super(MainView, self).__init__(*args, **kwargs)
 
-        self.kb = MainKeyboard()
-        self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
+        MainKeyboard().subscribe(MainKeyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
 
     async def on_button_pressed(self, keyboard: ReplyKeyboard, *args, button: str, user: TelegramUser, **kwargs):
         if 'search_objects' in button:
@@ -41,8 +39,7 @@ class SearchObjectView(View):
 
     def __init__(self, *args, **kwargs):
         super(SearchObjectView, self).__init__(*args, **kwargs)
-        self.kb = SearchObjectsKeyboard()
-        self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
+        SearchObjectsKeyboard().subscribe(SearchObjectsKeyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
 
     async def on_button_pressed(self, keyboard: ReplyKeyboard, *, button: str, user: TelegramUser, **kwargs):
         if 'all' in button:
@@ -62,8 +59,8 @@ class AllObjectsView(View):
 
     def __init__(self, *args, **kwargs):
         super(AllObjectsView, self).__init__(*args, **kwargs)
-        self.kb = AllObjectsNavKeyboard()
-        self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
+
+        AllObjectsNavKeyboard().subscribe(AllObjectsNavKeyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
         self.subscribe(self.Event.INITIALIZE, self.on_initialize)
 
     async def send_object(self, user: TelegramUser, obj: AbandonedObject):
@@ -101,6 +98,7 @@ class AllObjectsView(View):
 class AddObjectView(View):
     keyboard_classes = (
         AddObjectKeyboard,
+        AddObjectConfirmationKeyboard
     )
     steps = [
         'contents.objects.creation.name',
@@ -115,9 +113,9 @@ class AddObjectView(View):
     def __init__(self, *args, **kwargs):
         super(AddObjectView, self).__init__(*args, **kwargs)
         self.subscribe(self.Event.INITIALIZE, self.on_initialize)
-
-        self.kb = AddObjectKeyboard()
-        self.kb.subscribe(self.kb.Event.BUTTON_PRESSED, self.on_button_pressed)
+        AddObjectKeyboard().subscribe(AddObjectKeyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
+        AddObjectConfirmationKeyboard().subscribe(AddObjectConfirmationKeyboard.Event.BUTTON_PRESSED,
+                                                  self.on_button_pressed)
         self.subscribe(self.Event.MESSAGE, self.on_message)
 
     async def on_initialize(self, user: TelegramUser):
@@ -127,13 +125,15 @@ class AddObjectView(View):
         }
         await self.next_step(user)
 
+    async def ask_confirmation(self, user: TelegramUser):
+        await AddObjectConfirmationKeyboard().show(user)
+
     async def next_step(self, user: TelegramUser):
 
         curr_step = user.state.object_creation_buffer['step']
 
         if curr_step == len(self.steps):
-            print(user.state.object_creation_buffer)
-            return  # create
+            return await self.ask_confirmation(user)
 
         await self.sender.send_message(
             user,
@@ -145,8 +145,9 @@ class AddObjectView(View):
         user.state.object_creation_buffer['step'] += 1
 
     async def prev_step(self, user: TelegramUser):
-        user.state.object_creation_buffer['step'] -= 2
-        await self.next_step(user)
+        if user.state.object_creation_buffer['step'] > 1:
+            user.state.object_creation_buffer['step'] -= 2
+            await self.next_step(user)
 
     async def on_message(self, message: types.Message, user: TelegramUser, **kwargs):
 
@@ -162,8 +163,19 @@ class AddObjectView(View):
 
         await self.next_step(user)
 
-    async def on_button_pressed(self, keyboard: ReplyKeyboard, *, button: str, user: TelegramUser, **kwargs):
-        if 'cancel' in button:
-            await self.back(user)
-        elif 'back' in button:
-            await self.prev_step(user)
+    async def cancel(self, user: TelegramUser):
+        user.state.object_creation_buffer = None
+        await self.back(user)
+
+    async def on_button_pressed(self, keyboard: ReplyKeyboard | InlineKeyboard, *, button: str, user: TelegramUser,
+                                **kwargs):
+        if isinstance(keyboard, ReplyKeyboard):
+            if 'cancel' in button:
+                await self.cancel(user)
+            elif 'back' in button:
+                await self.prev_step(user)
+        else:
+            if 'cancel' in button:
+                await self.cancel(user)
+            elif 'apply' in button:
+                print('Object creation...')

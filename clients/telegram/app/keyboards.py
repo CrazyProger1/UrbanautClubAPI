@@ -1,4 +1,4 @@
-from tbf.keyboards import ReplyKeyboard
+from tbf.keyboards import ReplyKeyboard, InlineKeyboard
 
 
 class MainKeyboard(ReplyKeyboard):
@@ -61,5 +61,5 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
 
     class Meta:
         caption_key = 'keyboards.add_object.confirmation.caption'
-        autoshow = True
+        autoshow = False
         autohide = True

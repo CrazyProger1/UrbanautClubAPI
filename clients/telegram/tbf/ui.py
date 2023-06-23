@@ -21,7 +21,7 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
-        self._sender = Sender()
+        self.sender = Sender()
         self._visible = False
         super(UIObject, self).__init__()
 
