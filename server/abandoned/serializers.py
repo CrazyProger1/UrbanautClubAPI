@@ -9,22 +9,12 @@ class CoordinatesSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    city = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
-    region = serializers.SerializerMethodField()
-
     class Meta:
         model = Address
         fields = '__all__'
 
-    def get_city(self, obj):
-        return obj.city.name
-
-    def get_country(self, obj):
-        return obj.country.name
-
-    def get_region(self, obj):
-        return obj.city.region.name
+    def create(self, validated_data):
+        return super(AddressSerializer, self).create(validated_data)
 
 
 class AbandonedObjectLocationSerializer(serializers.ModelSerializer):
@@ -34,6 +24,15 @@ class AbandonedObjectLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = AbandonedObjectLocation
         fields = '__all__'
+
+    def create(self, validated_data):
+        coordinates_data = validated_data.pop('coordinates')
+        address_data = validated_data.pop('address')
+
+        coordinates = CoordinatesSerializer().create(coordinates_data)
+        address = AddressSerializer().create(address_data)
+
+        return AbandonedObjectLocation.objects.create(coordinates=coordinates, address=address)
 
 
 class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
@@ -48,3 +47,8 @@ class AbandonedObjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = AbandonedObject
         fields = ('id', 'name', 'description', 'state', 'category', 'location')
+
+    def create(self, validated_data):
+        location_data = validated_data.pop('location')
+        location = AbandonedObjectLocationSerializer().create(location_data)
+        return AbandonedObject.objects.create(**validated_data, location=location)

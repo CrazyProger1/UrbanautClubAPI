@@ -182,6 +182,8 @@ class AddObjectView(View):
         data = user.state.object_creation_buffer
         data.pop('step')
 
+        print(data)
+
         user.state.object_creation_buffer = None
         await self.sender.send_message(user, _(
             'contents.objects.created',

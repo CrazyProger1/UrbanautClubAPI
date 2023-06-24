@@ -40,7 +40,7 @@ DATABASE = {
 L18N = {
     'LOCALE_FOLDER': 'resources/languages',
     'BOT_DOMAIN': 'bot',
-    'UPDATE_TRANSLATIONS': False
+    'UPDATE_TRANSLATIONS': True
 }
 
 SUPPORT = {
