@@ -1,5 +1,6 @@
 import peewee
 from database.model import Model
+from .limits import *
 
 
 class Coordinates(Model):
@@ -45,3 +46,15 @@ class AbandonedObject(Model):
     # category = peewee.ForeignKeyField(AbandonedObjectCategory, field='name')
     state = peewee.CharField(max_length=1)
     location = peewee.ForeignKeyField(AbandonedObjectLocation)
+
+
+class Country(Model):
+    id = peewee.IntegerField(primary_key=True)
+    name = peewee.CharField(max_length=CITY_NAME_LENGTH, unique=True)
+
+
+class City(Model):
+    id = peewee.IntegerField(primary_key=True)
+    name = peewee.CharField(max_length=CITY_NAME_LENGTH)
+    display_name = peewee.CharField(max_length=CITY_DISPLAY_NAME_LENGTH, unique=True)
+    country = peewee.ForeignKeyField(Country)

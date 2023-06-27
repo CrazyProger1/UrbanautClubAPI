@@ -11,7 +11,16 @@ from .keyboards import Keyboard
 from .sender import Sender
 
 
-class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
+class ViewMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
+    _default_values = {
+        'default': False
+    }
+    _required_meta_fields = (
+        'path',
+    )
+
+
+class View(events.EventChannel, metaclass=ViewMeta):
     keyboard_classes: tuple[type[Keyboard]] = (
 
     )
@@ -28,7 +37,7 @@ class View(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         CALLBACK = 5
         MEDIA = 6
 
-    def __init__(self, bot: aiogram.Bot, set_view_callback: Callable):
+    def __init__(self, bot: aiogram.Bot = None, set_view_callback: Callable = None):
         self._aiogram_bot = bot
         self.sender = Sender()
         self._set_view = set_view_callback

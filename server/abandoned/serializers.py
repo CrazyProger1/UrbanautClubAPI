@@ -10,18 +10,6 @@ class CoordinatesSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    city = relations.HyperlinkedRelatedField(
-        view_name='cities-light-api-city-detail',
-        read_only=False,
-        queryset=get_all_cities()
-    )
-
-    country = relations.HyperlinkedRelatedField(
-        view_name='cities-light-api-country-detail',
-        read_only=False,
-        queryset=get_all_countries()
-    )
-
     class Meta:
         model = Address
         fields = '__all__'
@@ -53,11 +41,10 @@ class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
 
 class AbandonedObjectSerializer(serializers.ModelSerializer):
     location = AbandonedObjectLocationSerializer()
-    url = relations.HyperlinkedIdentityField(view_name='abandoned-object-detail')
 
     class Meta:
         model = AbandonedObject
-        fields = ('id', 'name', 'description', 'state', 'category', 'location', 'url')
+        fields = ('id', 'name', 'description', 'state', 'category', 'location')
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')

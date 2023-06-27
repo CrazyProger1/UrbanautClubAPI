@@ -10,8 +10,8 @@ from .models import TelegramUser
 
 
 class Router(metaclass=cls_utils.SingletonMeta):
-    def __init__(self, aiogram_bot: aiogram.Bot):
-        self._aiogram_bot = aiogram_bot
+    def __init__(self, bot: aiogram.Bot):
+        self._aiogram_bot = bot
         self._user_states = {}
         self._middleware_list = None
 
@@ -49,7 +49,9 @@ class Router(metaclass=cls_utils.SingletonMeta):
 
     async def get_current_view(self, user: TelegramUser) -> View:
         if not user.state.current_view:
-            await self.set_view(user, View.get_default())
+            default_view = View.get_default()
+            assert default_view is not None, 'Default view not set'
+            await self.set_view(user, default_view)
         return user.state.current_view
 
     async def set_view(self, user: TelegramUser, view: str | View | type[View]):

@@ -1,4 +1,4 @@
-from crf.serializer import Serializer
+from crf.serializer import Serializer, MethodField
 from .models import *
 
 
@@ -25,3 +25,19 @@ class AddressSerializer(Serializer):
 class CoordinatesSerializer(Serializer):
     class Meta:
         model = Coordinates
+
+
+class CitySerializer(Serializer):
+    country = MethodField(setter='set_country')
+
+    class Meta:
+        model = City
+
+    @classmethod
+    def set_country(cls, data: dict, ):
+        data['country'] = int(data['country'].split('/')[-2])
+
+
+class CountrySerializer(Serializer):
+    class Meta:
+        model = Country

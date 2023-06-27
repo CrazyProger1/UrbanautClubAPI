@@ -26,6 +26,28 @@ class Customizable:
         return new_instance
 
 
+class MetaChecker(type):
+    _default_values: dict = {}
+    _required_meta_fields: list | tuple = []
+
+    def __new__(mcs, name, bases, namespace):
+        cls = super().__new__(mcs, name, bases, namespace)
+
+        try:
+            meta = cls.Meta
+        except AttributeError:
+            raise AttributeError(f'{cls.__name__}.Meta not specified')
+
+        for field, value in mcs._default_values.items():
+            setattr(meta, field, getattr(meta, field, value))
+
+        for field in mcs._required_meta_fields:
+            if not hasattr(meta, field):
+                raise AttributeError(f'{cls.__name__}.Meta.{field} not specified')
+
+        return cls
+
+
 def iter_subclasses(cls, max_level=-1) -> Generator:
     if max_level == 0:
         return

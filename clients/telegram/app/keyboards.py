@@ -3,6 +3,7 @@ import functools
 from tbf.keyboards import ReplyKeyboard, InlineKeyboard
 from tbf.models import TelegramUser
 from tbf.translator import _
+
 from .models import AbandonedObjectCategory
 
 

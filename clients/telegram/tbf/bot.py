@@ -18,8 +18,8 @@ class Bot(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self):
         self._aiogram_bot = aiogram.Bot(token=settings.BOT.TOKEN)
         self._aiogram_dispatcher = aiogram.Dispatcher(bot=self._aiogram_bot)
-        self.sender = Sender(self._aiogram_bot)
-        self._router = Router(self._aiogram_bot)
+        self.sender = Sender(bot=self._aiogram_bot)
+        self._router = Router(bot=self._aiogram_bot)
         super(Bot, self).__init__()
 
     async def _handle_callback(self, *args, **kwargs):

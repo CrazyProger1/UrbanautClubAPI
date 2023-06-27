@@ -9,7 +9,17 @@ from .ui import UIObject
 from .translator import _
 
 
-class Keyboard(UIObject):
+class KeyboardMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
+    _default_values = {
+        'autoshow': False,
+        'autohide': False
+    }
+    _required_meta_fields = (
+        'caption_key',
+    )
+
+
+class Keyboard(UIObject, metaclass=KeyboardMeta):
     button_keys: tuple[str] = (
 
     )

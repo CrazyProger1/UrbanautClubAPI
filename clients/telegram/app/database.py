@@ -5,7 +5,7 @@ from utils import filesystem, config
 from database.database import connection
 from tbf.models import *
 from .models import *
-from .managers import AbandonedObjectCategoryAPIManager
+from .managers import AbandonedObjectCategoryAPIManager, CityAPIManager, CountryAPIManager
 
 
 async def load_categories():
@@ -19,10 +19,20 @@ async def load_categories():
 
 
 async def load_cities():
+    for city in await CityAPIManager.list_paginated():
+        try:
+            city.save(force_insert=True)
+        except peewee.IntegrityError:
+            pass
     logger.info('Loaded cities')
 
 
 async def load_countries():
+    for country in await CountryAPIManager.list_paginated():
+        try:
+            country.save(force_insert=True)
+        except peewee.IntegrityError:
+            pass
     logger.info('Loaded countries')
 
 
