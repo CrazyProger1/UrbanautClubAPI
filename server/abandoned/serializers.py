@@ -1,5 +1,6 @@
-from rest_framework import serializers
+from rest_framework import serializers, relations
 from abandoned.models import *
+from abandoned.services import *
 
 
 class CoordinatesSerializer(serializers.ModelSerializer):
@@ -9,12 +10,21 @@ class CoordinatesSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    city = relations.HyperlinkedRelatedField(
+        view_name='cities-light-api-city-detail',
+        read_only=False,
+        queryset=get_all_cities()
+    )
+
+    country = relations.HyperlinkedRelatedField(
+        view_name='cities-light-api-country-detail',
+        read_only=False,
+        queryset=get_all_countries()
+    )
+
     class Meta:
         model = Address
         fields = '__all__'
-
-    def create(self, validated_data):
-        return super(AddressSerializer, self).create(validated_data)
 
 
 class AbandonedObjectLocationSerializer(serializers.ModelSerializer):
@@ -43,10 +53,11 @@ class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
 
 class AbandonedObjectSerializer(serializers.ModelSerializer):
     location = AbandonedObjectLocationSerializer()
+    url = relations.HyperlinkedIdentityField(view_name='abandoned-object-detail')
 
     class Meta:
         model = AbandonedObject
-        fields = ('id', 'name', 'description', 'state', 'category', 'location')
+        fields = ('id', 'name', 'description', 'state', 'category', 'location', 'url')
 
     def create(self, validated_data):
         location_data = validated_data.pop('location')

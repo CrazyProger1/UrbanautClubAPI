@@ -2,6 +2,7 @@ import sys
 import aiogram
 
 from utils import cls_utils, events
+from utils.logging import logger
 from aiogram import types
 from enum import Enum
 from conf import settings
@@ -54,10 +55,16 @@ class Bot(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         )
 
     def run(self):
+        logger.info('Initializing...')
         self.publish(self.Event.INITIALIZE)
+
         self._register_handlers()
+
+        logger.info('Running bot...')
         aiogram.executor.start_polling(
             dispatcher=self._aiogram_dispatcher,
             skip_updates=True
         )
+
+        logger.info('Destroying...')
         self.publish(self.Event.DESTROY)
