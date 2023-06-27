@@ -1,6 +1,7 @@
 import aiohttp
 import enum
-from crf.serializers import Serializer
+
+from .serializer import Serializer
 
 
 class APIRoute(enum.Enum):
