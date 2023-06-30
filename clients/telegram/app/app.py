@@ -5,6 +5,7 @@ from tbf.middlewares import *
 
 from .views import *
 from .database import initialize_db
+from .sender import Sender
 
 
 class App(Bot):

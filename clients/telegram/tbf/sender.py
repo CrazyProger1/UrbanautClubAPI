@@ -11,13 +11,16 @@ class Sender(metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
 
-    async def send_message(self, user: TelegramUser, text: str = '', **kwargs) -> types.Message:
+    async def send_message(self, user: TelegramUser, text: str, **kwargs) -> types.Message:
         return await self._aiogram_bot.send_message(
             user.id,
             text,
             **kwargs,
             parse_mode=settings.MESSAGES.PARSE_MODE
         )
+
+    async def send_long_message(self, user: TelegramUser, text: str, **kwargs):
+        pass
 
     async def send_message_to_all(self, key: str, **kwargs) -> list[types.Message]:
         result = []

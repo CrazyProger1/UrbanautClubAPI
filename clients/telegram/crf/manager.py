@@ -79,12 +79,18 @@ class APIManager:
         serializer = cls.get_serializer()
 
         async with aiohttp.ClientSession() as session:
-            async with session.get(url=cls.get_api_route(APIRoute.GET)) as response:
-                data = await response.json()
-                if response.status == 200:
-                    results = data['results']
-                    next_page = data['next']
+            async def get_page(url):
+                async with session.get(url=url) as response:
+                    data = await response.json()
+                    if response.status == 200:
+                        results = data['results']
+                        next_page = data['next']
 
-                    for dataset in results:
-                        objects.append(serializer.deserialize(dataset))
+                        for dataset in results:
+                            objects.append(serializer.deserialize(dataset))
+
+                        if next_page:
+                            await get_page(next_page)
+
+            await get_page(cls.get_api_route(APIRoute.GET))
         return objects

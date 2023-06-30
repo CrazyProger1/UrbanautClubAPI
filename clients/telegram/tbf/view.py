@@ -3,6 +3,7 @@ import aiogram
 
 from enum import Enum
 from typing import Optional, Callable
+from conf import settings
 from aiogram import types
 from utils import cls_utils, string, events
 from .ui import UIObject
@@ -39,7 +40,7 @@ class View(events.EventChannel, metaclass=ViewMeta):
 
     def __init__(self, bot: aiogram.Bot = None, set_view_callback: Callable = None):
         self._aiogram_bot = bot
-        self.sender = Sender()
+        self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
         self._set_view = set_view_callback
         self._attached_objects: list[UIObject] = []
 

@@ -1,5 +1,5 @@
 import aiogram
-
+from conf import settings
 from enum import Enum
 from utils import events, cls_utils
 from .models import TelegramUser, Language
@@ -21,7 +21,7 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
-        self.sender = Sender()
+        self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
         self._visible = False
         super(UIObject, self).__init__()
 

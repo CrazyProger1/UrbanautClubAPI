@@ -42,8 +42,8 @@ class AbandonedObject(Model):
     name = peewee.CharField(max_length=250)
     description = peewee.CharField(max_length=100)
 
-    category = peewee.CharField(max_length=50)
-    # category = peewee.ForeignKeyField(AbandonedObjectCategory, field='name')
+    # category = peewee.CharField(max_length=50)
+    category = peewee.ForeignKeyField(AbandonedObjectCategory, field='name')
     state = peewee.CharField(max_length=1)
     location = peewee.ForeignKeyField(AbandonedObjectLocation)
 
