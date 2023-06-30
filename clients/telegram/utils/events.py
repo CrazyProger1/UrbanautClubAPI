@@ -55,6 +55,18 @@ class EventChannel:
 
     async def async_publish(self, event: Event, *args, **kwargs):
         args = list(args)
+        try:
+            current_event, current_task = self._tasks[self._task_pointer]
+
+            if event == current_event:
+                args_copy = args.copy()
+                if inspect.ismethod(current_task) and current_task.__self__ != self:
+                    args_copy.insert(0, self)
+                self._next_task()
+                await current_task(*args, **kwargs)
+
+        except IndexError:
+            pass
 
         if event in self._subscribers.keys():
             for callback in self._subscribers[event]:
@@ -68,27 +80,21 @@ class EventChannel:
                     return
 
     def _next_task(self):
-        if len(self._tasks) > self._task_pointer + 1:
+        if len(self._tasks) >= self._task_pointer + 1:
             self._task_pointer += 1
-            return True
-        return False
 
     def switch_task(self, shift: int = 1):
-        if len(self._tasks) > self._task_pointer + shift > 0:
-            self._task_pointer += shift
-            return True
-        return False
+        self._task_pointer += shift
 
-    async def execute_async_tasks(self):
-        start_event, start_callback = self._tasks[self._task_pointer]
+        if len(self._tasks) <= self._task_pointer:
+            self._task_pointer = len(self._tasks) - 1
+        elif self._task_pointer < 0:
+            self._task_pointer = 0
 
-        async def wrapper(*args, **kwargs):
-            event, callback = self._tasks[self._task_pointer]
-            self.unsubscribe(event, wrapper)
-            if self._next_task():
-                next_event, _ = self._tasks[self._task_pointer]
-                self.subscribe(next_event, wrapper)
+    @property
+    def task_pointer(self) -> int:
+        return self._task_pointer
 
-            return await callback(*args, **kwargs)
-
-        self.subscribe(start_event, wrapper)
+    def clear_tasks(self):
+        self._task_pointer = 0
+        self._tasks.clear()
