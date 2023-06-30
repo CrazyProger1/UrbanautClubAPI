@@ -73,6 +73,12 @@ class EventChannel:
             return True
         return False
 
+    def switch_task(self, shift: int = 1):
+        if len(self._tasks) > self._task_pointer + shift > 0:
+            self._task_pointer += shift
+            return True
+        return False
+
     async def execute_async_tasks(self):
         start_event, start_callback = self._tasks[self._task_pointer]
 
