@@ -4,7 +4,7 @@ from tbf.keyboards import ReplyKeyboard, InlineKeyboard
 from tbf.models import TelegramUser
 from tbf.translator import _
 
-from .models import AbandonedObjectCategory
+from .models import AbandonedObjectCategory, Country
 
 
 class MainKeyboard(ReplyKeyboard):
@@ -121,3 +121,4 @@ class SelectObjectStateKeyboard(InlineKeyboard):
         caption_key = 'keyboards.add_object.select_state.caption'
         autoshow = False
         autohide = True
+

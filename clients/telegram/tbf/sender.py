@@ -19,6 +19,17 @@ class Sender(metaclass=cls_utils.SingletonMeta):
             parse_mode=settings.MESSAGES.PARSE_MODE
         )
 
+    async def send_location(self, user: TelegramUser, latitude, longitude, **kwargs):
+        return await self._aiogram_bot.send_location(
+            chat_id=user.id,
+            latitude=latitude,
+            longitude=longitude,
+            **kwargs
+        )
+
+    async def send_translated(self, user: TelegramUser, key: str, **kwargs) -> types.Message:
+        return await self.send_message(user, _(key, user=user), **kwargs)
+
     async def send_long_message(self, user: TelegramUser, text: str, **kwargs):
         pass
 
