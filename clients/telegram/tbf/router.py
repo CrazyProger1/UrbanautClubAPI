@@ -2,7 +2,7 @@ import aiogram
 
 from aiogram import types
 from utils import cls_utils
-from .view import View
+from .page import Page
 from .state import UserState
 from .enums import ContentType
 from .middlewares import Middleware
@@ -16,14 +16,14 @@ class Router(metaclass=cls_utils.SingletonMeta):
         self._middleware_list = None
 
         self._initialize_middlewares()
-        self._initialize_views()
+        self._initialize_pages()
 
     def _initialize_middlewares(self):
         self._middleware_list = list(map(lambda m: m(self._aiogram_bot), cls_utils.iter_subclasses(Middleware)))
 
-    def _initialize_views(self):
-        for view in cls_utils.iter_subclasses(View):
-            view(self._aiogram_bot, self.set_view)
+    def _initialize_pages(self):
+        for page in cls_utils.iter_subclasses(Page):
+            page(self._aiogram_bot, self.set_page)
 
     @staticmethod
     def _middlewares(content_type: ContentType):
@@ -47,49 +47,49 @@ class Router(metaclass=cls_utils.SingletonMeta):
 
         return decorator
 
-    async def get_current_view(self, user: TelegramUser) -> View:
-        if not user.state.current_view:
-            default_view = View.get_default()
-            assert default_view is not None, 'Default view not set'
-            await self.set_view(user, default_view)
-        return user.state.current_view
+    async def get_current_page(self, user: TelegramUser) -> Page:
+        if not user.state.current_page:
+            default_page = Page.get_default()
+            assert default_page is not None, 'Default page not set'
+            await self.set_page(user, default_page)
+        return user.state.current_page
 
-    async def set_view(self, user: TelegramUser, view: str | View | type[View]):
-        if isinstance(view, str):
-            view_obj = View.get(view)
-            if not view_obj:
-                raise ValueError(f'View with that path does not exists: {view}')
-            view = view_obj
+    async def set_page(self, user: TelegramUser, page: str | Page | type[Page]):
+        if isinstance(page, str):
+            page_obj = Page.get(page)
+            if not page_obj:
+                raise ValueError(f'Page with that path does not exists: {page}')
+            page = page_obj
 
-        if not isinstance(view, View):
-            if issubclass(view, View):
-                view = view()
+        if not isinstance(page, Page):
+            if issubclass(page, Page):
+                page = page()
             else:
-                raise ValueError('View must be a type of View or instance of View or View path')
+                raise ValueError('page must be a type of Page or instance of Page or Page path')
 
-        if user.state.current_view:
-            await user.state.current_view.async_publish(view.Event.DESTROY, user)
+        if user.state.current_page:
+            await user.state.current_page.async_publish(page.Event.DESTROY, user)
 
-        await view.async_publish(view.Event.INITIALIZE, user)
+        await page.async_publish(page.Event.INITIALIZE, user)
 
-        user.state.current_view = view
+        user.state.current_page = page
 
     @_middlewares(content_type=ContentType.CALLBACK)
     async def route_callback(self, *args, **kwargs):
-        view = await self.get_current_view(kwargs.get('user'))
-        await view.async_publish(view.Event.CALLBACK, *args, **kwargs)
+        page = await self.get_current_page(kwargs.get('user'))
+        await page.async_publish(page.Event.CALLBACK, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MESSAGE)
     async def route_message(self, *args, **kwargs):
-        view = await self.get_current_view(kwargs.get('user'))
-        await view.async_publish(view.Event.MESSAGE, *args, **kwargs)
+        page = await self.get_current_page(kwargs.get('user'))
+        await page.async_publish(page.Event.MESSAGE, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.COMMAND)
     async def route_command(self, *args, **kwargs):
-        view = await self.get_current_view(kwargs.get('user'))
-        await view.async_publish(view.Event.COMMAND, *args, **kwargs)
+        page = await self.get_current_page(kwargs.get('user'))
+        await page.async_publish(page.Event.COMMAND, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MEDIA)
     async def route_media(self, *args, **kwargs):
-        view = await self.get_current_view(kwargs.get('user'))
-        await view.async_publish(view.Event.MEDIA, *args, **kwargs)
+        page = await self.get_current_page(kwargs.get('user'))
+        await page.async_publish(page.Event.MEDIA, *args, **kwargs)

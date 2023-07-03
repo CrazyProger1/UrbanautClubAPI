@@ -7,10 +7,10 @@ __states = {}
 @dataclass
 class UserState:
     user: Model
-    current_view = None
+    current_page = None
 
 
-def get_state(user):
+def get_state(user) -> UserState:
     try:
         return __states[user.id]
     except KeyError:

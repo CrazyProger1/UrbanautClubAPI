@@ -22,11 +22,11 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
         self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
-        self._visible = False
+        self._visible_for = set()
         super(UIObject, self).__init__()
 
     @classmethod
-    def set_parent_view(cls, view):
+    def set_parent_page(cls, view):
         cls._view = view
 
     @classmethod
@@ -36,15 +36,14 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
 
     async def show(self, user: TelegramUser):
         await self.async_publish(self.Event.SHOW, user)
-        self._visible = True
+        self._visible_for.add(user)
 
     async def hide(self, user: TelegramUser):
-        await self.async_publish(self.Event.HIDE, user)
-        self._visible = False
+        try:
+            self._visible_for.remove(user)
+            await self.async_publish(self.Event.HIDE, user)
+        except KeyError:
+            pass
 
-    def is_visible(self) -> bool:
-        return self._visible
-
-    @property
-    def visible(self) -> bool:
-        return self._visible
+    def is_visible(self, user: TelegramUser) -> bool:
+        return user in self._visible_for

@@ -78,6 +78,20 @@ class ReplyKeyboard(Keyboard):
         if self.parent_view:
             self.parent_view.subscribe(self.parent_view.Event.MESSAGE, self._check_pressed)
 
+    async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
+        if self.is_visible(user=user):
+            text = message.text
+            button = self.get_translation_key_pairs(language=user.language).get(text)
+
+            if button:
+                await self.async_publish(
+                    self.Event.BUTTON_PRESSED,
+                    button=button,
+                    user=user,
+                    message=message
+                )
+                return 'break'
+
     @functools.cache
     def get_buttons(self, user: TelegramUser):
         result, row = [], []
@@ -125,20 +139,6 @@ class ReplyKeyboard(Keyboard):
                 pass
 
             await super(ReplyKeyboard, self).hide(user)
-
-    async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
-        if self.visible:
-            text = message.text
-            button = self.get_translation_key_pairs(language=user.language).get(text)
-
-            if button:
-                await self.async_publish(
-                    self.Event.BUTTON_PRESSED,
-                    button=button,
-                    user=user,
-                    message=message
-                )
-                return 'break'
 
 
 class InlineKeyboard(Keyboard):

@@ -12,7 +12,7 @@ from .keyboards import Keyboard
 from .sender import Sender
 
 
-class ViewMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
+class PageMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
     _default_values = {
         'default': False
     }
@@ -21,7 +21,7 @@ class ViewMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
     )
 
 
-class View(events.EventChannel, metaclass=ViewMeta):
+class Page(events.EventChannel, metaclass=PageMeta):
     keyboard_classes: tuple[type[Keyboard]] = (
 
     )
@@ -38,13 +38,13 @@ class View(events.EventChannel, metaclass=ViewMeta):
         CALLBACK = 5
         MEDIA = 6
 
-    def __init__(self, bot: aiogram.Bot = None, set_view_callback: Callable = None):
+    def __init__(self, bot: aiogram.Bot = None, set_page_callback: Callable = None):
         self._aiogram_bot = bot
         self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
-        self._set_view = set_view_callback
+        self._set_page = set_page_callback
         self._attached_objects: list[UIObject] = []
 
-        super(View, self).__init__()
+        super(Page, self).__init__()
 
         self._attach_keyboards()
         self._subscribe_on_events()
@@ -87,7 +87,7 @@ class View(events.EventChannel, metaclass=ViewMeta):
 
     def attach(self, obj: UIObject):
         if obj not in self._attached_objects:
-            obj.set_parent_view(self)
+            obj.set_parent_page(self)
             obj.publish(obj.Event.ATTACH)
             self._attached_objects.append(obj)
 
@@ -99,38 +99,38 @@ class View(events.EventChannel, metaclass=ViewMeta):
     async def back(self, user: TelegramUser):
         try:
             prev_page, _ = self.Meta.path.rsplit('.', 1)
-            await self._set_view(user, prev_page)
+            await self._set_page(user, prev_page)
         except ValueError:
             pass
 
-    async def next(self, user: TelegramUser, view: any):
-        if isinstance(view, str):
+    async def next(self, user: TelegramUser, page: any):
+        if isinstance(page, str):
             try:
-                await self._set_view(
+                await self._set_page(
                     user,
-                    string.join_by(self._set_view, view)
+                    string.join_by(self._set_page, page)
                 )
             except ValueError:
-                await self._set_view(
+                await self._set_page(
                     user,
-                    string.join_by(view)
+                    string.join_by(page)
                 )
             return
-        await self._set_view(
+        await self._set_page(
             user,
-            view
+            page
         )
 
     @classmethod
     @functools.cache
-    def get_default(cls) -> Optional["View"]:
-        for view in cls_utils.iter_subclasses(cls):
-            if view.Meta.default:
-                return view()
+    def get_default(cls) -> Optional["Page"]:
+        for page in cls_utils.iter_subclasses(cls):
+            if page.Meta.default:
+                return page()
 
     @classmethod
     @functools.cache
-    def get(cls, path: str) -> Optional["View"]:
-        for view in cls_utils.iter_subclasses(cls):
-            if view.Meta.path == path:
-                return view()
+    def get(cls, path: str) -> Optional["Page"]:
+        for page in cls_utils.iter_subclasses(cls):
+            if page.Meta.path == path:
+                return page()
