@@ -27,13 +27,12 @@ class EventChannel:
     #     self._tasks.append((event, callback))
 
     def unsubscribe(self, event: Event, callback: Callable):
+
         if event and event in self._subscribers.keys():
-            self._subscribers[event] = list(
-                filter(
-                    lambda x: x is not callback,
-                    self._subscribers[event]
-                )
-            )
+            try:
+                self._subscribers[event].remove(callback)
+            except ValueError:
+                pass
 
     def subscribe(self, event: Event, callback: Callable):
         if not callable(callback):

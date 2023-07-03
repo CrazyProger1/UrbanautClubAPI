@@ -11,6 +11,10 @@ class Sender(metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot = None):
         self._aiogram_bot = bot
 
+    @property
+    def bot(self) -> aiogram.Bot:
+        return self._aiogram_bot
+
     async def send_message(self, user: TelegramUser, text: str, **kwargs) -> types.Message:
         return await self._aiogram_bot.send_message(
             user.id,
@@ -28,7 +32,8 @@ class Sender(metaclass=cls_utils.SingletonMeta):
         )
 
     async def send_translated(self, user: TelegramUser, key: str, **kwargs) -> types.Message:
-        return await self.send_message(user, _(key, user=user), **kwargs)
+        format_kwargs = kwargs.pop('format_kwargs', {})
+        return await self.send_message(user, _(key, user=user).format(**format_kwargs), **kwargs)
 
     async def send_long_message(self, user: TelegramUser, text: str, **kwargs):
         pass

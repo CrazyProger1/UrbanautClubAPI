@@ -10,6 +10,7 @@ from .keyboards import *
 from .services import *
 from .models import *
 from .creation_state import ObjectCreationState
+from .tasks import *
 
 
 class BasePage(Page):
@@ -59,32 +60,18 @@ class SearchObjectsPage(BasePage):
     keyboard_classes = (
         SearchObjectsKeyboard,
     )
+    task_classes = (
+        SendAllObjectsTask,
+    )
 
     class Meta:
         default = False
         path = 'main.search'
 
-    async def send_all_objects(self, user: TelegramUser):
-        for obj in await get_all_objects(user=user):
-            msg: types.Message = await self.sender.send_object(
-                user=user,
-                obj=obj
-            )
-            coords = obj.location.coordinates
-            try:
-                await self.sender.send_location(
-                    user=user,
-                    latitude=coords.latitude,
-                    longitude=coords.longitude,
-                    reply_to_message_id=msg.message_id
-                )
-            except aiogram.utils.exceptions.BadRequest:
-                pass
-
     async def on_button_pressed(self, keyboard, button: str, user: TelegramUser, **kwargs):
         await super(SearchObjectsPage, self).on_button_pressed(keyboard, button, user, **kwargs)
         if 'all' in button:
-            await self.send_all_objects(user=user)
+            await self.execute_task(user=user, task=SendAllObjectsTask)
 
 
 class AddObjectPage(BasePage):
@@ -95,12 +82,36 @@ class AddObjectPage(BasePage):
         AddObjectConfirmationKeyboard
     )
 
+    task_classes = (
+        InputObjectNameTask,
+        InputObjectDescTask,
+        InputObjectCoordinatesTask,
+    )
+
     class Meta:
         default = False
         path = 'main.add_object'
 
+    def __init__(self, *args, **kwargs):
+        super(AddObjectPage, self).__init__(*args, **kwargs)
+        self._current_task_index = 0
+
     async def on_initialize(self, user: TelegramUser):
         user.state.object_creation_state = getattr(user.state, 'object_creation_state', ObjectCreationState())
+
+        for task in self.task_classes:
+            task().subscribe(task.Event.DONE, self.on_task_done)
+
+        await self.execute_task(user=user, task=InputObjectNameTask)
+
+    async def on_task_done(self, task, *args, user: TelegramUser, **kwargs):
+        self._current_task_index = self.task_classes.index(task.__class__)
+
+        try:
+            next_task = self.task_classes[self._current_task_index + 1]
+            await self.execute_task(user=user, task=next_task)
+        except IndexError:
+            pass
 
     # class Event(Enum):
     #     INITIALIZE = 1

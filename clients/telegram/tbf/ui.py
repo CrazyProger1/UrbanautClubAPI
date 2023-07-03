@@ -6,7 +6,7 @@ from .models import TelegramUser, Language
 from .sender import Sender
 
 
-class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
+class UIObject(events.EventChannel):
     class Meta:
         autoshow = False
         autohide = False
@@ -23,16 +23,19 @@ class UIObject(events.EventChannel, metaclass=cls_utils.SingletonMeta):
         self._aiogram_bot = bot
         self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
         self._visible_for = set()
+        self._page = None
         super(UIObject, self).__init__()
 
-    @classmethod
-    def set_parent_page(cls, view):
-        cls._view = view
-
-    @classmethod
     @property
-    def parent_view(cls):
-        return getattr(cls, '_view', None)
+    def bot(self) -> aiogram.Bot:
+        return self._aiogram_bot
+
+    def bind_parent_page(self, page):
+        self._page = page
+
+    @property
+    def parent_page(self):
+        return getattr(self, '_page', None)
 
     async def show(self, user: TelegramUser):
         await self.async_publish(self.Event.SHOW, user)

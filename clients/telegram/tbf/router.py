@@ -18,6 +18,10 @@ class Router(metaclass=cls_utils.SingletonMeta):
         self._initialize_middlewares()
         self._initialize_pages()
 
+    @property
+    def bot(self) -> aiogram.Bot:
+        return self._aiogram_bot
+
     def _initialize_middlewares(self):
         self._middleware_list = list(map(lambda m: m(self._aiogram_bot), cls_utils.iter_subclasses(Middleware)))
 

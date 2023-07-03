@@ -75,8 +75,8 @@ class ReplyKeyboard(Keyboard):
         self.subscribe(self.Event.ATTACH, self._on_attach)
 
     def _on_attach(self, *args, **kwargs):
-        if self.parent_view:
-            self.parent_view.subscribe(self.parent_view.Event.MESSAGE, self._check_pressed)
+        if self.parent_page:
+            self.parent_page.subscribe(self.parent_page.Event.MESSAGE, self._check_pressed)
 
     async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
         if self.is_visible(user=user):
@@ -150,8 +150,8 @@ class InlineKeyboard(Keyboard):
         self.subscribe(self.Event.ATTACH, self._on_attach)
 
     def _on_attach(self, *args, **kwargs):
-        if self.parent_view:
-            self.parent_view.subscribe(self.parent_view.Event.CALLBACK, self._check_pressed)
+        if self.parent_page:
+            self.parent_page.subscribe(self.parent_page.Event.CALLBACK, self._check_pressed)
 
     @functools.cache
     def get_buttons(self, user: TelegramUser) -> list[list[types.KeyboardButton | types.InlineKeyboardButton]]:
