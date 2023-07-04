@@ -71,7 +71,9 @@ class AddObjectPage(BasePage):
     task_classes = (
         InputObjectName,
         InputObjectDescription,
-        InputObjectCoordinates
+        InputObjectCoordinates,
+        SelectObjectCategoryTask,
+        SelectObjectStateTask
     )
 
     class Meta:
@@ -90,7 +92,26 @@ class AddObjectPage(BasePage):
         except IndexError:
             pass
 
-        # async def on_initialize(self, user: TelegramUser):
+    async def prev_task(self, user: TelegramUser):
+        tasks: tuple = self.get_tasks()
+        task: Task = next(filter(lambda t: t.is_executing(user=user), tasks))
+
+        task_idx = tasks.index(task)
+        try:
+            prev_task = tasks[task_idx - 1]
+            await self.cancel_task(user=user, task=task)
+            await self.execute_task(user=user, task=prev_task)
+        except IndexError:
+            pass
+
+    async def on_button_pressed(self, keyboard: Keyboard, button: str, user: TelegramUser, **kwargs):
+        if isinstance(keyboard, ReplyKeyboard):
+            if 'back' in button:
+                await self.prev_task(user=user)
+            elif 'cancel' in button:
+                await self.back(user=user)
+
+    # async def on_initialize(self, user: TelegramUser):
     #     user.state.object_creation_state = getattr(user.state, 'object_creation_state', ObjectCreationState())
     #
     #     for task in self.task_classes:

@@ -6,6 +6,7 @@ from tbf.models import TelegramUser
 from .services import *
 from .exceptions import *
 from .limits import *
+from .keyboards import *
 
 
 class SendAllObjectsTask(Task):
@@ -57,6 +58,35 @@ class InputTask(Task):
             return 'break'
 
 
+class SelectTask(Task):
+    keyboard_class: type[Keyboard] = None
+
+    def __init__(self, *args, **kwargs):
+        super(SelectTask, self).__init__(*args, **kwargs)
+        self.keyboard = self.keyboard_class()
+        self.keyboard.subscribe(self.keyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
+        self.subscribe(self.Event.DONE, self.hide_keyboard)
+        self.subscribe(self.Event.CANCEL, self.hide_keyboard)
+
+    async def hide_keyboard(self, user: TelegramUser):
+        await self.page.hide_object(user=user, obj=self.keyboard)
+
+    async def on_execute(self, user: TelegramUser):
+        if self.keyboard_class:
+            await self.page.show_object(user=user, obj=self.keyboard_class)
+
+    async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
+        pass
+
+    async def on_button_pressed(self, keyboard: Keyboard, button: str, user: TelegramUser, **kwargs):
+        if isinstance(keyboard, self.keyboard_class) and self.is_executing(user=user):
+            try:
+                await self.set_value(user=user, keyboard=keyboard, button=button)
+            except ValidationError as e:
+                await self.sender.send_translated(user, e.message_key, format_kwargs=e.format_kwargs)
+            return 'break'
+
+
 class InputObjectName(InputTask):
     caption_key = 'contents.objects.creation.name'
 
@@ -90,4 +120,20 @@ class InputObjectCoordinates(InputTask):
             print(f'Object coordinates: {lat}x{lon}')
         except Exception as e:
             raise ValidationError('exceptions.objects.creation.coordinates.format')
+        await self.done(user=user)
+
+
+class SelectObjectCategoryTask(SelectTask):
+    keyboard_class = SelectObjectCategoryKeyboard
+
+    async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
+        print(button)
+        await self.done(user=user)
+
+
+class SelectObjectStateTask(SelectTask):
+    keyboard_class = SelectObjectStateKeyboard
+
+    async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
+        print(button)
         await self.done(user=user)

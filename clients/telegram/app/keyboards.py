@@ -1,6 +1,6 @@
 import functools
 
-from tbf.keyboards import ReplyKeyboard, InlineKeyboard
+from tbf.keyboards import ReplyKeyboard, InlineKeyboard, Keyboard
 from tbf.models import TelegramUser
 from tbf.translator import _
 
