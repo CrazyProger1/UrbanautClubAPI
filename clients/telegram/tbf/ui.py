@@ -16,37 +16,45 @@ class UIObject(events.EventChannel):
         DESTROY = 2
         SHOW = 3
         HIDE = 4
-        ATTACH = 5
-        DETACH = 6
 
-    def __init__(self, bot: aiogram.Bot = None):
+    def __init__(self, bot: aiogram.Bot = None, parent_page=None):
         self._aiogram_bot = bot
         self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
         self._visible_for = set()
-        self._page = None
+        self._parent_page = parent_page
+
         super(UIObject, self).__init__()
+        self._subscribe_on_events()
+
+    def _subscribe_on_events(self):
+        self.subscribe(self.Event.SHOW, self._show)
+        self.subscribe(self.Event.HIDE, self._hide)
+
+        self.subscribe(self.Event.SHOW, self.on_show)
+        self.subscribe(self.Event.HIDE, self.on_hide)
 
     @property
     def bot(self) -> aiogram.Bot:
         return self._aiogram_bot
 
-    def bind_parent_page(self, page):
-        self._page = page
-
     @property
-    def parent_page(self):
-        return getattr(self, '_page', None)
+    def page(self):
+        return self._parent_page
 
-    async def show(self, user: TelegramUser):
-        await self.async_publish(self.Event.SHOW, user)
+    async def _show(self, user: TelegramUser):
         self._visible_for.add(user)
 
-    async def hide(self, user: TelegramUser):
+    async def _hide(self, user: TelegramUser):
         try:
             self._visible_for.remove(user)
-            await self.async_publish(self.Event.HIDE, user)
         except KeyError:
             pass
+
+    async def on_show(self, user: TelegramUser):
+        pass
+
+    async def on_hide(self, user: TelegramUser):
+        pass
 
     def is_visible(self, user: TelegramUser) -> bool:
         return user in self._visible_for

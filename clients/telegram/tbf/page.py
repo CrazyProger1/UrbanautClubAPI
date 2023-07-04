@@ -1,4 +1,6 @@
 import functools
+import inspect
+
 import aiogram
 
 from enum import Enum
@@ -23,7 +25,7 @@ class PageMeta(cls_utils.MetaChecker, cls_utils.SingletonMeta):
 
 
 class Page(events.EventChannel, metaclass=PageMeta):
-    keyboard_classes: tuple[type[Keyboard]] = (
+    object_classes: tuple[type[UIObject]] = (
 
     )
 
@@ -47,93 +49,97 @@ class Page(events.EventChannel, metaclass=PageMeta):
         self._aiogram_bot = bot
         self.sender = cls_utils.get_class(settings.BOT.SENDER_CLASS, not settings.DEBUG, Sender)()
         self._set_page = set_page_callback
-        self._tasks = [task_cls(bot=self._aiogram_bot) for task_cls in self.task_classes]
-        self._attached_objects: list[UIObject] = []
+        self._tasks = []
+        self._objects = []
 
         super(Page, self).__init__()
 
-        self._attach_keyboards()
-        self._subscribe_on_events()
+        self._initialize_objects()
         self._initialize_tasks()
-
-    def _subscribe_on_events(self):
-        self.subscribe(self.Event.INITIALIZE, self._initialize)
-        self.subscribe(self.Event.DESTROY, self._destroy)
+        self._subscribe_on_events()
 
     def _initialize_tasks(self):
-        for task in self._tasks:
-            task.bind_parent_page(self)
+        for task_cls in self.task_classes:
+            if not inspect.isclass(task_cls) or not issubclass(task_cls, Task):
+                raise
+            task = task_cls(bot=self._aiogram_bot, parent_page=self)
+            self._tasks.append(task)
 
-    async def _initialize(self, user: TelegramUser):
-        await self._initialize_objects(user)
-        await self._show_objects(user)
+    def _initialize_objects(self):
+        for obj_cls in self.object_classes:
+            if not inspect.isclass(obj_cls) or not issubclass(obj_cls, UIObject):
+                raise
+            obj = obj_cls(bot=self._aiogram_bot, parent_page=self)
+            self._objects.append(obj)
 
-    async def _destroy(self, user: TelegramUser):
-        await self._hide_objects(user)
+    def _subscribe_on_events(self):
+        self.subscribe(self.Event.INITIALIZE, self._initialize_page)
+        self.subscribe(self.Event.DESTROY, self._destroy_page)
 
-    def _attach_keyboards(self):
-        for keyboard in self.keyboard_classes:
-            self.attach(keyboard(self._aiogram_bot))
+        self.subscribe(self.Event.INITIALIZE, self.on_initialize)
+        self.subscribe(self.Event.DESTROY, self.on_destroy)
+        self.subscribe(self.Event.MEDIA, self.on_media)
+        self.subscribe(self.Event.MESSAGE, self.on_message)
+        self.subscribe(self.Event.CALLBACK, self.on_callback)
+        self.subscribe(self.Event.COMMAND, self.on_command)
 
-    async def _initialize_objects(self, user: TelegramUser):
-        for obj in self._attached_objects:
+        for keyboard in self.get_keyboards():
+            keyboard.subscribe(keyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
+
+        for task in self.get_tasks():
+            task.subscribe(task.Event.DONE, self.on_task_done)
+
+    @functools.cache
+    def get_objects(self) -> tuple[UIObject, ...]:
+        return tuple(self._objects)
+
+    @functools.cache
+    def get_keyboards(self) -> tuple[Keyboard, ...]:
+        return tuple(filter(lambda obj: isinstance(obj, Keyboard), self.get_objects()))
+
+    @functools.cache
+    def get_tasks(self) -> tuple[Task, ...]:
+        return tuple(self._tasks)
+
+    async def _initialize_page(self, user: TelegramUser):
+        for obj in self._objects:
             await obj.async_publish(obj.Event.INITIALIZE, user)
-
-    async def _destroy_objects(self, user: TelegramUser):
-        for obj in self._attached_objects:
-            await obj.async_publish(obj.Event.DESTROY, user)
-
-    async def _show_objects(self, user: TelegramUser):
-        for obj in self._attached_objects:
             if getattr(obj.Meta, 'autoshow', False):
-                await obj.show(user)
+                await self.show_object(user=user, obj=obj)
 
-    async def _hide_objects(self, user: TelegramUser):
-        for obj in self._attached_objects:
+    async def _destroy_page(self, user: TelegramUser):
+        for obj in self._objects:
+            await obj.async_publish(obj.Event.DESTROY, user)
             if getattr(obj.Meta, 'autohide', False):
-                await obj.hide(user)
+                await self.hide_object(user=user, obj=obj)
 
     async def execute_task(self, user: TelegramUser, task: type[Task]):
-        if issubclass(task, Task):
+        if inspect.isclass(task) and issubclass(task, Task):
             task = task()
 
         if task in self._tasks:
-            await task.execute(user=user)
+            await task.async_publish(task.Event.EXECUTE, user=user)
 
     async def cancel_task(self, user: TelegramUser, task: type[Task] | Task):
-        if issubclass(task, Task):
+        if inspect.isclass(task) and issubclass(task, Task):
             task = task()
 
         if task in self._tasks:
-            await task.cancel(user=user)
+            await task.async_publish(task.Event.CANCEL, user=user)
 
     async def show_object(self, user: TelegramUser, obj: type[UIObject] | UIObject):
-        if issubclass(obj, UIObject):
+        if inspect.isclass(obj) and issubclass(obj, UIObject):
             obj = obj()
 
-        if obj in self._attached_objects:
-            await obj.show(user=user)
+        if obj in self._objects:
+            await obj.async_publish(obj.Event.SHOW, user=user)
 
-    async def hide_object(self, user: TelegramUser, obj: type[UIObject]):
-        if issubclass(obj, UIObject):
+    async def hide_object(self, user: TelegramUser, obj: type[UIObject] | UIObject):
+        if inspect.isclass(obj) and issubclass(obj, UIObject):
             obj = obj()
 
-        if obj in self._attached_objects:
-            await obj.hide(user=user)
-
-    def get_attached(self) -> tuple[UIObject]:
-        return tuple(self._attached_objects)
-
-    def attach(self, obj: UIObject):
-        if obj not in self._attached_objects:
-            obj.bind_parent_page(self)
-            obj.publish(obj.Event.ATTACH)
-            self._attached_objects.append(obj)
-
-    def detach(self, obj: UIObject):
-        if obj in self._attached_objects:
-            obj.publish(obj.Event.DETACH)
-            self._attached_objects.remove(obj)
+        if obj in self._objects:
+            await obj.async_publish(obj.Event.HIDE, user=user)
 
     async def back(self, user: TelegramUser):
         try:
@@ -173,3 +179,27 @@ class Page(events.EventChannel, metaclass=PageMeta):
         for page in cls_utils.iter_subclasses(cls):
             if page.Meta.path == path:
                 return page()
+
+    async def on_initialize(self, user: TelegramUser):
+        pass
+
+    async def on_destroy(self, user: TelegramUser):
+        pass
+
+    async def on_message(self, *args, **kwargs):
+        pass
+
+    async def on_command(self, *args, **kwargs):
+        pass
+
+    async def on_media(self, *args, **kwargs):
+        pass
+
+    async def on_callback(self, *args, **kwargs):
+        pass
+
+    async def on_button_pressed(self, keyboard: Keyboard, button: str, user: TelegramUser, **kwargs):
+        pass
+
+    async def on_task_done(self, task: Task, user: TelegramUser):
+        pass
