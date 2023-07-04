@@ -35,9 +35,7 @@ class Keyboard(UIObject, metaclass=KeyboardMeta):
         DESTROY = 2
         SHOW = 3
         HIDE = 4
-        ATTACH = 5
-        DETACH = 6
-        BUTTON_PRESSED = 7
+        BUTTON_PRESSED = 5
 
     @functools.cache
     def get_translation_key_pairs(self, language: Language):
@@ -72,11 +70,21 @@ class ReplyKeyboard(Keyboard):
     def __init__(self, *args, **kwargs):
         super(ReplyKeyboard, self).__init__(*args, **kwargs)
 
-        self.subscribe(self.Event.ATTACH, self._on_attach)
+        self.page.subscribe(self.page.Event.MESSAGE, self._check_pressed)
 
-    def _on_attach(self, *args, **kwargs):
-        if self.parent_view:
-            self.parent_view.subscribe(self.parent_view.Event.MESSAGE, self._check_pressed)
+    async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
+        if self.is_visible(user=user):
+            text = message.text
+            button = self.get_translation_key_pairs(language=user.language).get(text)
+
+            if button:
+                await self.async_publish(
+                    self.Event.BUTTON_PRESSED,
+                    button=button,
+                    user=user,
+                    message=message
+                )
+                return 'break'
 
     @functools.cache
     def get_buttons(self, user: TelegramUser):
@@ -100,7 +108,7 @@ class ReplyKeyboard(Keyboard):
             row_width=self.row_width
         )
 
-    async def show(self, user: TelegramUser):
+    async def _show(self, user: TelegramUser):
         markup = self.get_markup(user)
 
         msg = await self.sender.send_message(
@@ -110,9 +118,9 @@ class ReplyKeyboard(Keyboard):
         )
         user.state.reply_keyboard_message_id = msg.message_id
 
-        await super(ReplyKeyboard, self).show(user)
+        await super(ReplyKeyboard, self)._show(user)
 
-    async def hide(self, user: TelegramUser):
+    async def _hide(self, user: TelegramUser):
         try:
             msgid = user.state.reply_keyboard_message_id
         except AttributeError:
@@ -124,21 +132,7 @@ class ReplyKeyboard(Keyboard):
             except aiogram.utils.exceptions.MessageToDeleteNotFound:
                 pass
 
-            await super(ReplyKeyboard, self).hide(user)
-
-    async def _check_pressed(self, view, message: types.Message, user: TelegramUser, *args, **kwargs):
-        if self.visible:
-            text = message.text
-            button = self.get_translation_key_pairs(language=user.language).get(text)
-
-            if button:
-                await self.async_publish(
-                    self.Event.BUTTON_PRESSED,
-                    button=button,
-                    user=user,
-                    message=message
-                )
-                return 'break'
+            await super(ReplyKeyboard, self)._hide(user)
 
 
 class InlineKeyboard(Keyboard):
@@ -146,12 +140,7 @@ class InlineKeyboard(Keyboard):
 
     def __init__(self, *args, **kwargs):
         super(InlineKeyboard, self).__init__(*args, **kwargs)
-
-        self.subscribe(self.Event.ATTACH, self._on_attach)
-
-    def _on_attach(self, *args, **kwargs):
-        if self.parent_view:
-            self.parent_view.subscribe(self.parent_view.Event.CALLBACK, self._check_pressed)
+        self.page.subscribe(self.page.Event.CALLBACK, self._check_pressed)
 
     @functools.cache
     def get_buttons(self, user: TelegramUser) -> list[list[types.KeyboardButton | types.InlineKeyboardButton]]:
@@ -177,9 +166,9 @@ class InlineKeyboard(Keyboard):
             markup.add(*btn_row)
         return markup
 
-    async def show(self, user: TelegramUser):
+    async def _show(self, user: TelegramUser):
         markup = self.get_markup(user)
-        await super(InlineKeyboard, self).show(user)
+        await super(InlineKeyboard, self)._show(user)
         msg = await self.sender.send_message(
             user,
             self.get_caption(user),
@@ -187,7 +176,7 @@ class InlineKeyboard(Keyboard):
         )
         user.state.inline_keyboard_message_id = msg.message_id
 
-    async def hide(self, user: TelegramUser):
+    async def _hide(self, user: TelegramUser):
         try:
             msgid = user.state.inline_keyboard_message_id
         except AttributeError:
@@ -198,7 +187,7 @@ class InlineKeyboard(Keyboard):
                 await self._aiogram_bot.delete_message(user.id, msgid)
             except aiogram.utils.exceptions.MessageToDeleteNotFound:
                 pass
-            await super(InlineKeyboard, self).hide(user)
+            await super(InlineKeyboard, self)._hide(user)
 
     @functools.cache
     def get_pressed(self, text: str, language: Language) -> str | None:

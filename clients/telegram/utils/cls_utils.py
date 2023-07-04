@@ -1,5 +1,7 @@
+import functools
 from typing import Generator
 from utils.import_utils import import_module
+from utils.logging import logger
 
 
 class SingletonMeta(type):
@@ -9,21 +11,6 @@ class SingletonMeta(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(SingletonMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
-
-
-class Customizable:
-    cls_path: str = None
-
-    def __new__(cls, *args, **kwargs):
-        if cls in Customizable.__subclasses__() and cls.cls_path and cls.__name__ != cls.cls_path.rsplit('.', 1)[-1]:
-            subclass = import_module(cls.cls_path)
-            if issubclass(subclass, Customizable):
-                return subclass(*args, **kwargs)
-            else:
-                raise  #
-
-        new_instance = super(Customizable, cls).__new__(cls, *args, **kwargs)
-        return new_instance
 
 
 class MetaChecker(type):
@@ -56,3 +43,14 @@ def iter_subclasses(cls, max_level=-1) -> Generator:
         yield subcls
         for subsubcls in iter_subclasses(subcls, max_level - 1):
             yield subsubcls
+
+
+@functools.cache
+def get_class(path: str, raise_error: bool = True, default: type = None) -> type | None:
+    try:
+        return import_module(path)
+    except ImportError:
+        logger.error(f"The classpath is incorrect or class can't be imported: {path}")
+        if raise_error:
+            raise
+        return default

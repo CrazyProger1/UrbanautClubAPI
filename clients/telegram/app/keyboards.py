@@ -4,7 +4,7 @@ from tbf.keyboards import ReplyKeyboard, InlineKeyboard
 from tbf.models import TelegramUser
 from tbf.translator import _
 
-from .models import AbandonedObjectCategory
+from .models import AbandonedObjectCategory, Country
 
 
 class MainKeyboard(ReplyKeyboard):
@@ -71,7 +71,10 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
         autohide = True
 
     def get_caption(self, user: TelegramUser):
-        data = user.state.object_creation_buffer
+        state = user.state.object_creation_state
+
+        data = state.data
+        coordinates = data['coordinates']
 
         return _(
             'contents.objects.object_form',
@@ -82,8 +85,8 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
             category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
             state=_(f'contents.objects.states.{data["state"]}', user),
             address=None,
-            latitude=data['latitude'],
-            longitude=data['longitude']
+            latitude=coordinates[0],
+            longitude=coordinates[1]
         )
 
 

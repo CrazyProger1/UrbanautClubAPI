@@ -9,7 +9,7 @@ FILES = {
 
 env_conf = ENVConfig.load(FILES['ENV_CONFIG_FILE'])
 
-DEBUG = True
+DEBUG = False
 
 APP = {
     'NAME': 'PC-Alarm',
@@ -26,7 +26,9 @@ LOGGING = {
 
 BOT = {
     'TOKEN': env_conf.TOKEN,
-    'ADMIN': int(env_conf.ADMIN) if env_conf.ADMIN else 0
+    'ADMIN': int(env_conf.ADMIN) if env_conf.ADMIN else 0,
+    'ROUTER_CLASS': 'tbf.router.Router',
+    'SENDER_CLASS': 'app.sender.Sender'
 }
 
 DATABASE = {
@@ -40,7 +42,7 @@ DATABASE = {
 L18N = {
     'LOCALE_FOLDER': 'resources/languages',
     'BOT_DOMAIN': 'bot',
-    'UPDATE_TRANSLATIONS': True
+    'UPDATE_TRANSLATIONS': False
 }
 
 SUPPORT = {
