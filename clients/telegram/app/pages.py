@@ -93,7 +93,7 @@ class AddObjectPage(BasePage):
             next_task = tasks[task_idx + 1]
             await self.execute_task(user=user, task=next_task)
         except IndexError:
-            pass
+            await self.back(user=user)
 
     async def prev_task(self, user: TelegramUser):
         tasks: tuple = self.get_tasks()

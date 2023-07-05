@@ -31,5 +31,13 @@ def get_country_by_name(name: str, raise_exceptions=True) -> Country:
             raise e
 
 
+def get_city_by_name(name: str, raise_exceptions=True) -> City:
+    try:
+        return City.get(name=name)
+    except Exception as e:
+        if raise_exceptions:
+            raise e
+
+
 async def create_object(**data):
     await AbandonedObjectAPIManager.create(**data)

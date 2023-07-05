@@ -1,6 +1,8 @@
 import aiogram
+import geopy
 
 from aiogram import types
+from conf import settings
 from tbf.task import Task
 from tbf.models import TelegramUser
 from .services import *
@@ -119,9 +121,26 @@ class InputObjectCoordinates(InputTask):
     async def set_value(self, user: TelegramUser, value: str):
         try:
             lat, lon = map(float, value.split('x'))
-            user.state.ocs.data['latitude'] = lat
-            user.state.ocs.data['longitude'] = lon
+            user.state.ocs.data['latitude'] = round(lat, 5)
+            user.state.ocs.data['longitude'] = round(lon, 5)
+
+            geolocator = geopy.Nominatim(user_agent=settings.APP.NAME)
+            location = geolocator.reverse(f'{lat}, {lon}', language='en')
+            address = location.raw['address']
+
+            country = get_country_by_name(address['country'])
+            city = get_city_by_name(address['city'])
+            house_number = address['house_number']
+            postcode = address['postcode']
+            street = address['road']
+
+            user.state.ocs.data['street'] = street
+            user.state.ocs.data['country'] = country
+            user.state.ocs.data['city'] = city
+            user.state.ocs.data['street_number'] = house_number
+            user.state.ocs.data['zipcode'] = postcode
         except Exception as e:
+            print(e)
             raise ValidationError('exceptions.objects.creation.coordinates.format')
         await self.done(user=user)
 
@@ -168,10 +187,11 @@ class CreateObjectTask(Task):
                 },
                 "address": {
                     "street": "test",
-                    "street_number": "ads1",
-                    "zipcode": "123123",
-                    "country": 1,
-                    "city": 1
+                    "street_number": data['street_number'],
+                    "zipcode": data['zipcode'],
+                    "country": data['country'].id,
+                    "city": data['city'].id
                 }
             }
         })
+        await self.done(user=user)
