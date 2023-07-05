@@ -27,5 +27,10 @@ class AuthMiddleware(Middleware):
                 last_name=tg_user.last_name,
                 language=language
             )
-
+        db_user.username = tg_user.username
+        db_user.first_name = tg_user.first_name
+        db_user.last_name = tg_user.last_name
+        db_user.state.language_changed = db_user.language.short_name != language.short_name
+        db_user.language = language
+        db_user.save()
         return await method(message_or_callback, user=db_user, **kwargs)

@@ -1,8 +1,8 @@
 from conf import settings
+from utils import cache
 from tbf.bot import Bot
 from tbf.translator import Translator
 from tbf.middlewares import *
-
 from .pages import *
 from .tasks import *
 from .database import initialize_db

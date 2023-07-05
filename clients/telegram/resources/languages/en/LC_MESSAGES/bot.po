@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-06-22 14:16+0300\n"
+"PO-Revision-Date: 2023-07-05 15:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: en\n"
@@ -141,3 +141,27 @@ msgstr "Enter the @username🧑‍💻"
 
 msgid "keyboards.main.buttons.search_objects"
 msgstr "Search Objects"
+
+msgid "keyboards.main.buttons.add_object"
+msgstr "Add object"
+
+msgid "keyboards.main.caption"
+msgstr "keyboards.main.caption"
+
+msgid "keyboards.search.buttons.all"
+msgstr "keyboards.search.buttons.all"
+
+msgid "keyboards.common.back"
+msgstr "keyboards.common.back"
+
+msgid "keyboards.search.caption"
+msgstr "keyboards.search.caption"
+
+msgid "keyboards.common.cancel"
+msgstr "keyboards.common.cancel"
+
+msgid "keyboards.add_object.caption"
+msgstr "keyboards.add_object.caption"
+
+msgid "contents.objects.creation.name"
+msgstr "contents.objects.creation.name"

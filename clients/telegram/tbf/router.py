@@ -1,7 +1,7 @@
 import aiogram
 
 from aiogram import types
-from utils import cls_utils
+from utils import cls_utils, cache
 from .page import Page
 from .state import UserState
 from .enums import ContentType
@@ -58,6 +58,9 @@ class Router(metaclass=cls_utils.SingletonMeta):
             await self.set_page(user, default_page)
         return user.state.current_page
 
+    async def reset_page(self, user: TelegramUser):
+        await self.set_page(user, user.state.current_page)
+
     async def set_page(self, user: TelegramUser, page: str | Page | type[Page]):
         if isinstance(page, str):
             page_obj = Page.get(page)
@@ -78,22 +81,43 @@ class Router(metaclass=cls_utils.SingletonMeta):
 
         user.state.current_page = page
 
+    async def check_language_changed(self, user: TelegramUser):
+        if user.state.language_changed:
+            def has_user_param(wrapper):
+                try:
+                    annotations = wrapper.__annotations__
+                    return 'user' not in annotations.keys()
+                except AttributeError:
+                    pass
+                return True
+
+            cache.clear_cache(fltr=has_user_param)
+            await self.reset_page(user=user)
+
     @_middlewares(content_type=ContentType.CALLBACK)
     async def route_callback(self, *args, **kwargs):
-        page = await self.get_current_page(kwargs.get('user'))
+        user = kwargs.get('user')
+        await self.check_language_changed(user=user)
+        page = await self.get_current_page(user=user)
         await page.async_publish(page.Event.CALLBACK, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MESSAGE)
     async def route_message(self, *args, **kwargs):
-        page = await self.get_current_page(kwargs.get('user'))
+        user = kwargs.get('user')
+        await self.check_language_changed(user=user)
+        page = await self.get_current_page(user=user)
         await page.async_publish(page.Event.MESSAGE, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.COMMAND)
     async def route_command(self, *args, **kwargs):
-        page = await self.get_current_page(kwargs.get('user'))
+        user = kwargs.get('user')
+        await self.check_language_changed(user=user)
+        page = await self.get_current_page(user=user)
         await page.async_publish(page.Event.COMMAND, *args, **kwargs)
 
     @_middlewares(content_type=ContentType.MEDIA)
     async def route_media(self, *args, **kwargs):
-        page = await self.get_current_page(kwargs.get('user'))
+        user = kwargs.get('user')
+        await self.check_language_changed(user=user)
+        page = await self.get_current_page(user=user)
         await page.async_publish(page.Event.MEDIA, *args, **kwargs)
