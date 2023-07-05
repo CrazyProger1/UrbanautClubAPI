@@ -1,6 +1,8 @@
 import aiogram
 
+from conf import settings
 from utils import cls_utils
+from utils.logging import logger
 from aiogram import types
 from .models import *
 
@@ -13,12 +15,28 @@ class Middleware(metaclass=cls_utils.SingletonMeta):
         return await method(message_or_callback, **kwargs)
 
 
+class ErrorCatchingMiddleware(Middleware):
+    async def __call__(self, method, message_or_callback: types.Message | types.CallbackQuery, **kwargs):
+        try:
+            return await method(message_or_callback, **kwargs)
+        except Exception as e:
+            logger.error(f'{type(e).__name__}: {e}')
+
+            await message_or_callback.bot.send_message(
+                message_or_callback.from_user.id,
+                f'⚠️An error occurred during code execution:'
+                f'\n<code>{type(e).__name__}: {e}.</code>'
+                f'\n\nPlease contact the developer @{settings.SUPPORT.TELEGRAM}',
+                parse_mode=settings.MESSAGES.PARSE_MODE
+            )
+            return
+
+
 class AuthMiddleware(Middleware):
     async def __call__(self, method, message_or_callback: types.Message | types.CallbackQuery, **kwargs):
         tg_user = message_or_callback.from_user
         db_user = TelegramUser.get_or_none(id=tg_user.id)
         language = Language.get_or_none(short_name=tg_user.locale.language) or Language.get_default()
-
         if not db_user:
             db_user = TelegramUser.create(
                 id=tg_user.id,
