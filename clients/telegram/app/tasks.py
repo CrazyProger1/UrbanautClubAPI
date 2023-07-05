@@ -14,6 +14,10 @@ from .serializers import AbandonedObjectSerializer
 
 
 class SendAllObjectsTask(Task):
+    def __init__(self, *args, **kwargs):
+        super(SendAllObjectsTask, self).__init__(*args, **kwargs)
+        self.keyboard = AllObjectsNavKeyboard()
+
     async def on_execute(self, user: TelegramUser):
         for obj in await get_all_objects(user=user):
             msg: types.Message = await self.sender.send_object(
@@ -30,7 +34,7 @@ class SendAllObjectsTask(Task):
                 )
             except aiogram.utils.exceptions.BadRequest:
                 pass
-
+        await self.page.show_object(user=user, obj=self.keyboard)
         await self.done(user=user)
 
 
@@ -128,19 +132,27 @@ class InputObjectCoordinates(InputTask):
             location = geolocator.reverse(f'{lat}, {lon}', language='en')
             address = location.raw['address']
 
-            country = get_country_by_name(address['country'])
-            city = get_city_by_name(address['city'])
-            house_number = address['house_number']
-            postcode = address['postcode']
-            street = address['road']
+            try:
+                country = get_country_by_name(address['country'], raise_exceptions=False)
+                if not country:
+                    raise ValidationError('exceptions.objects.creation.country.not_supported')
+            except KeyError:
+                country = None
+
+            city = get_city_by_name(address.get('city'), raise_exceptions=False)
+            house_number = address.get('house_number')
+            postcode = address.get('postcode')
+            street = address.get('road')
 
             user.state.ocs.data['street'] = street
             user.state.ocs.data['country'] = country
             user.state.ocs.data['city'] = city
             user.state.ocs.data['street_number'] = house_number
             user.state.ocs.data['zipcode'] = postcode
+        except ValidationError:
+            raise
         except Exception as e:
-            print(e)
+            print(type(e), e)
             raise ValidationError('exceptions.objects.creation.coordinates.format')
         await self.done(user=user)
 
@@ -168,13 +180,16 @@ class ConfirmObjectCreationTask(SelectTask):
 
     async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
         if 'cancel' in button:
-            await self.page.back(user=user)
+            return await self.page.back(user=user)
+
         await self.done(user=user)
 
 
 class CreateObjectTask(Task):
     async def on_execute(self, user: TelegramUser):
         data = user.state.ocs.data
+        city = data['city']
+
         await create_object(**{
             "name": data['name'],
             "description": data['description'],
@@ -186,12 +201,13 @@ class CreateObjectTask(Task):
                     "longitude": data['longitude']
                 },
                 "address": {
-                    "street": "test",
+                    "street": data['street'],
                     "street_number": data['street_number'],
                     "zipcode": data['zipcode'],
                     "country": data['country'].id,
-                    "city": data['city'].id
+                    "city": city.id if city else None
                 }
             }
         })
+        await self.sender.send_translated(user, 'contents.objects.creation.created')
         await self.done(user=user)

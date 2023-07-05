@@ -47,7 +47,7 @@ class SearchObjectsPage(BasePage):
         SearchObjectsKeyboard,
     )
     task_classes = (
-        SendAllObjectsTask,
+
     )
 
     class Meta:
@@ -57,7 +57,23 @@ class SearchObjectsPage(BasePage):
     async def on_button_pressed(self, keyboard, button: str, user: TelegramUser, **kwargs):
         await super(SearchObjectsPage, self).on_button_pressed(keyboard, button, user, **kwargs)
         if 'all' in button:
-            await self.execute_task(user=user, task=SendAllObjectsTask)
+            await self.next(user=user, page=AllObjectsPage)
+
+
+class AllObjectsPage(BasePage):
+    object_classes = (
+        AllObjectsNavKeyboard,
+    )
+    task_classes = (
+        SendAllObjectsTask,
+    )
+
+    class Meta:
+        default = False
+        path = 'main.search.all'
+
+    async def on_initialize(self, user: TelegramUser):
+        await self.execute_task(user=user, task=SendAllObjectsTask)
 
 
 class AddObjectPage(BasePage):
@@ -101,9 +117,10 @@ class AddObjectPage(BasePage):
 
         task_idx = tasks.index(task)
         try:
-            prev_task = tasks[task_idx - 1]
-            await self.cancel_task(user=user, task=task)
-            await self.execute_task(user=user, task=prev_task)
+            if task_idx - 1 > -1:
+                prev_task = tasks[task_idx - 1]
+                await self.cancel_task(user=user, task=task)
+                await self.execute_task(user=user, task=prev_task)
         except IndexError:
             pass
 

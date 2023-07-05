@@ -41,7 +41,7 @@ class AllObjectsNavKeyboard(ReplyKeyboard):
 
     class Meta:
         caption_key = 'keyboards.search.all.caption'
-        autoshow = True
+        autoshow = False
         autohide = True
 
 
@@ -116,7 +116,9 @@ class SelectObjectStateKeyboard(InlineKeyboard):
     button_keys = (
         'contents.objects.states.d',
         'contents.objects.states.b',
-        'contents.objects.states.a'
+        'contents.objects.states.a',
+        'contents.objects.states.g',
+        'contents.objects.states.n'
     )
 
     class Meta:
