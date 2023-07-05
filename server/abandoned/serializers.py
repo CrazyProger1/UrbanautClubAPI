@@ -40,7 +40,7 @@ class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
 
 
 class AbandonedObjectSerializer(serializers.ModelSerializer):
-    location = AbandonedObjectLocationSerializer()
+    location = AbandonedObjectLocationSerializer(read_only=False, required=False)
 
     class Meta:
         model = AbandonedObject
@@ -49,4 +49,5 @@ class AbandonedObjectSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         location_data = validated_data.pop('location')
         location = AbandonedObjectLocationSerializer().create(location_data)
-        return AbandonedObject.objects.create(**validated_data, location=location)
+        validated_data['location'] = location
+        return AbandonedObject.objects.create(**validated_data)

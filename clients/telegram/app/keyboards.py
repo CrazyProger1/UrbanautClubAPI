@@ -58,7 +58,7 @@ class AddObjectKeyboard(ReplyKeyboard):
         autohide = True
 
 
-class AddObjectConfirmationKeyboard(InlineKeyboard):
+class CreateObjectConfirmationKeyboard(InlineKeyboard):
     row_width = 2
     button_keys = (
         'keyboards.common.create',
@@ -71,10 +71,9 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
         autohide = True
 
     def get_caption(self, user: TelegramUser):
-        state = user.state.object_creation_state
+        state = user.state.ocs
 
         data = state.data
-        coordinates = data['coordinates']
 
         return _(
             'contents.objects.object_form',
@@ -85,8 +84,8 @@ class AddObjectConfirmationKeyboard(InlineKeyboard):
             category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
             state=_(f'contents.objects.states.{data["state"]}', user),
             address=None,
-            latitude=coordinates[0],
-            longitude=coordinates[1]
+            latitude=data['latitude'],
+            longitude=data['longitude']
         )
 
 

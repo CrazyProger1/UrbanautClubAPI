@@ -7,6 +7,8 @@ from .services import *
 from .exceptions import *
 from .limits import *
 from .keyboards import *
+from .creation_state import ObjectCreationState
+from .serializers import AbandonedObjectSerializer
 
 
 class SendAllObjectsTask(Task):
@@ -95,7 +97,7 @@ class InputObjectName(InputTask):
             raise ValidationError('exceptions.objects.creation.name.length')
 
     async def set_value(self, user: TelegramUser, value: str):
-        print('Object name:', value)
+        user.state.ocs.data['name'] = value
         await self.done(user=user)
 
 
@@ -107,7 +109,7 @@ class InputObjectDescription(InputTask):
             raise ValidationError('exceptions.objects.creation.description.length')
 
     async def set_value(self, user: TelegramUser, value: str):
-        print('Object description:', value)
+        user.state.ocs.data['description'] = value
         await self.done(user=user)
 
 
@@ -117,7 +119,8 @@ class InputObjectCoordinates(InputTask):
     async def set_value(self, user: TelegramUser, value: str):
         try:
             lat, lon = map(float, value.split('x'))
-            print(f'Object coordinates: {lat}x{lon}')
+            user.state.ocs.data['latitude'] = lat
+            user.state.ocs.data['longitude'] = lon
         except Exception as e:
             raise ValidationError('exceptions.objects.creation.coordinates.format')
         await self.done(user=user)
@@ -127,7 +130,8 @@ class SelectObjectCategoryTask(SelectTask):
     keyboard_class = SelectObjectCategoryKeyboard
 
     async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
-        print(button)
+        category_name = button.split('.')[-1]
+        user.state.ocs.data['category'] = category_name
         await self.done(user=user)
 
 
@@ -135,5 +139,39 @@ class SelectObjectStateTask(SelectTask):
     keyboard_class = SelectObjectStateKeyboard
 
     async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
-        print(button)
+        state = button.split('.')[-1]
+        user.state.ocs.data['state'] = state
         await self.done(user=user)
+
+
+class ConfirmObjectCreationTask(SelectTask):
+    keyboard_class = CreateObjectConfirmationKeyboard
+
+    async def set_value(self, user: TelegramUser, keyboard: Keyboard, button: str):
+        if 'cancel' in button:
+            await self.page.back(user=user)
+        await self.done(user=user)
+
+
+class CreateObjectTask(Task):
+    async def on_execute(self, user: TelegramUser):
+        data = user.state.ocs.data
+        await create_object(**{
+            "name": data['name'],
+            "description": data['description'],
+            "state": data['state'],
+            "category": data['category'],
+            "location": {
+                "coordinates": {
+                    "latitude": data['latitude'],
+                    "longitude": data['longitude']
+                },
+                "address": {
+                    "street": "test",
+                    "street_number": "ads1",
+                    "zipcode": "123123",
+                    "country": 1,
+                    "city": 1
+                }
+            }
+        })
