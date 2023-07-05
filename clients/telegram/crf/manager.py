@@ -1,3 +1,5 @@
+import json
+
 import aiohttp
 import enum
 
@@ -42,12 +44,18 @@ class APIManager:
         serializer = cls.get_serializer()
         instance = serializer.deserialize(data)
 
+        headers = {'Content-Type': 'application/json'}
+        json_data = json.dumps(data, indent=1)
         async with aiohttp.ClientSession() as session:
             async with session.post(
                     url=cls.get_api_route(APIRoute.POST),
-                    data=data
+                    data=json_data,
+                    headers=headers
             ) as response:
+                print(json.dumps(data, indent=1))
                 data = await response.json()
+                print(response.status)
+                print(data)
                 # print(response.status)
                 # print('Data:', data)
         return instance

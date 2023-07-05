@@ -8,6 +8,7 @@ __states = {}
 class UserState:
     user: Model
     current_page = None
+    language_changed = False
 
 
 def get_state(user) -> UserState:

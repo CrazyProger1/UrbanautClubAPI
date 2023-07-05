@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-06-30 14:52+0300\n"
+"PO-Revision-Date: 2023-07-05 17:30+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -90,10 +90,25 @@ msgid "contents.objects.states.a"
 msgstr "Середній🟡"
 
 msgid "keyboards.add_object.select_state.caption"
-msgstr "Оберіть стан пустки"
+msgstr "Оберіть стан пустки🏚"
 
 msgid "contents.objects.creation.coordinates"
-msgstr "Введіть координати пустки"
+msgstr "Введіть координати пустки📍"
 
 msgid "contents.objects.categories.Test cat"
 msgstr "Test category"
+
+msgid "contents.objects.categories.Shop"
+msgstr "Магазин🏬"
+
+msgid "contents.objects.categories.House"
+msgstr "Будинок🏚"
+
+msgid "contents.objects.creation.created"
+msgstr "Пустку додано🏘"
+
+msgid "contents.objects.states.g"
+msgstr "Хороший🟢"
+
+msgid "contents.objects.states.n"
+msgstr "Новинка⭐️"
