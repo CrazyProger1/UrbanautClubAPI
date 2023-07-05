@@ -12,6 +12,7 @@ class AbandonedObjectListCreateAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         return get_available_objects_for_user(self.request.user)
 
+
 class AbandonedObjectRetrieveAPIView(generics.RetrieveAPIView):
     queryset = get_all_objects()
     serializer_class = AbandonedObjectSerializer
