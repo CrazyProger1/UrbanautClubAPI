@@ -1,16 +1,6 @@
-import aiogram
-
-from aiogram import types
-from enum import Enum
-from tbf.translator import _
 from tbf.page import Page
-from tbf.models import *
-
-from .keyboards import *
-from .services import *
-from .models import *
-from .creation_state import ObjectCreationState
 from .tasks import *
+from .creation_state import ObjectCreationState
 
 
 class BasePage(Page):

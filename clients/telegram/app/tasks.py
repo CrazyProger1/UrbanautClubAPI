@@ -1,19 +1,14 @@
-from typing import Tuple
-
 import aiogram
 import geopy
 
 from aiogram import types
 from conf import settings
 from tbf.task import Task
-from tbf.models import TelegramUser
 from crf.exceptions import HTTPResponseError
 from .services import *
 from .exceptions import *
 from .limits import *
 from .keyboards import *
-from .creation_state import ObjectCreationState
-from .serializers import AbandonedObjectSerializer
 
 
 class SendAllObjectsTask(Task):
