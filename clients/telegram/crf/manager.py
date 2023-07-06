@@ -82,13 +82,16 @@ class APIManager:
                 print('Data:', data)
 
     @classmethod
-    async def list_paginated(cls):
+    async def list_paginated(cls, params: dict = None, auto_pagination: bool = True):
+        if not params:
+            params = {}
+
         objects = []
         serializer = cls.get_serializer()
 
         async with aiohttp.ClientSession() as session:
             async def get_page(url):
-                async with session.get(url=url) as response:
+                async with session.get(url=url, params=params) as response:
                     data = await response.json()
                     if response.status == 200:
                         results = data['results']
@@ -98,7 +101,8 @@ class APIManager:
                             objects.append(serializer.deserialize(dataset))
 
                         if next_page:
-                            await get_page(next_page)
+                            if auto_pagination:
+                                await get_page(next_page)
 
             await get_page(cls.get_api_route(APIRoute.GET))
         return objects

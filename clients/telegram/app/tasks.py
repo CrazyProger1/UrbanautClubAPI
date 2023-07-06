@@ -18,8 +18,20 @@ class SendAllObjectsTask(Task):
         super(SendAllObjectsTask, self).__init__(*args, **kwargs)
         self.keyboard = AllObjectsNavKeyboard()
 
-    async def on_execute(self, user: TelegramUser):
-        for obj in await get_all_objects(user=user):
+        self.keyboard.subscribe(self.keyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
+        self.limit = 2
+        self.offset = 0
+        self.last_offset = 0
+
+    async def send_part(self, user: TelegramUser):
+        self.last_offset = 0
+        for obj in await get_all_objects(
+                user=user,
+                params={'limit': self.limit, 'offset': self.offset},
+                auto_pagination=False
+        ):
+            self.last_offset += 1
+            self.offset += 1
             msg: types.Message = await self.sender.send_object(
                 user=user,
                 obj=obj
@@ -34,8 +46,27 @@ class SendAllObjectsTask(Task):
                 )
             except aiogram.utils.exceptions.BadRequest:
                 pass
-        await self.page.show_object(user=user, obj=self.keyboard)
-        await self.done(user=user)
+        if self.last_offset == 0:
+            await self.sender.send_translated(user, 'contents.search.all.end')
+
+    async def on_execute(self, user: TelegramUser):
+        await self.send_part(user=user)
+
+    async def on_button_pressed(self, keyboard: Keyboard, button: str, user: TelegramUser, **kwargs):
+        if isinstance(keyboard, AllObjectsNavKeyboard) and self.is_executing(user=user):
+            if 'back' in button:
+                await self.done(user=user)
+                await self.page.back(user=user)
+            elif 'next' in button:
+                await self.send_part(user=user)
+            elif 'prev' in button:
+                self.offset -= self.limit + self.last_offset
+                if self.offset < 0:
+                    self.offset = 0
+                    await self.sender.send_translated(user, 'contents.search.all.start')
+                else:
+                    await self.send_part(user=user)
+            return 'break'
 
 
 class InputTask(Task):

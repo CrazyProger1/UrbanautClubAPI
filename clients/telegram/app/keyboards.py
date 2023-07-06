@@ -5,6 +5,7 @@ from tbf.models import TelegramUser
 from tbf.translator import _
 
 from .models import AbandonedObjectCategory, Country
+from .address import get_address
 
 
 class MainKeyboard(ReplyKeyboard):
@@ -41,7 +42,7 @@ class AllObjectsNavKeyboard(ReplyKeyboard):
 
     class Meta:
         caption_key = 'keyboards.search.all.caption'
-        autoshow = False
+        autoshow = True
         autohide = True
 
 
@@ -83,7 +84,7 @@ class CreateObjectConfirmationKeyboard(InlineKeyboard):
             desc=data['description'],
             category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
             state=_(f'contents.objects.states.{data["state"]}', user),
-            address=None,
+            address=get_address(data['street_number'], data['street'], data['city'], data['country']),
             latitude=data['latitude'],
             longitude=data['longitude']
         )

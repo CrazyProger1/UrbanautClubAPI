@@ -11,6 +11,10 @@ class Middleware(metaclass=cls_utils.SingletonMeta):
     def __init__(self, bot: aiogram.Bot):
         self._aiogram_bot = bot
 
+    @property
+    def bot(self) -> aiogram.Bot:
+        return self._aiogram_bot
+
     async def __call__(self, method, message_or_callback: types.Message | types.CallbackQuery, **kwargs):
         return await method(message_or_callback, **kwargs)
 
@@ -20,9 +24,11 @@ class ErrorCatchingMiddleware(Middleware):
         try:
             return await method(message_or_callback, **kwargs)
         except Exception as e:
+            if settings.DEBUG:
+                raise e
             logger.error(f'{type(e).__name__}: {e}')
 
-            await message_or_callback.bot.send_message(
+            await self.bot.send_message(
                 message_or_callback.from_user.id,
                 f'⚠️An error occurred during code execution:'
                 f'\n<code>{type(e).__name__}: {e}.</code>'

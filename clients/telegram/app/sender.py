@@ -5,6 +5,7 @@ from tbf.models import TelegramUser
 from tbf.translator import _
 from .models import AbandonedObject
 from .services import *
+from .address import get_address
 
 
 class Sender(sender.Sender):
@@ -27,7 +28,7 @@ class Sender(sender.Sender):
                 desc=obj.description,
                 category=_(f'contents.objects.categories.{obj.category.name}', user=user),
                 state=_(f'contents.objects.states.{obj.state}', user=user),
-                address=f'{address.street_number}, {address.street}, {city.display_name}',
+                address=get_address(address.street_number, address.street, city, address.country),
                 latitude=coordinates.latitude,
                 longitude=coordinates.longitude
             ),

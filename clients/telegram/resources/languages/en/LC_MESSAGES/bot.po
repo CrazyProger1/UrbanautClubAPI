@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-07-05 17:31+0300\n"
+"PO-Revision-Date: 2023-07-06 12:06+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -118,3 +118,9 @@ msgstr "Good🟢"
 
 msgid "contents.objects.states.n"
 msgstr "Novelty⭐️"
+
+msgid "contents.search.all.end"
+msgstr "There are no more buildings🤷‍♂️"
+
+msgid "contents.search.all.start"
+msgstr "There are no more buildings🤷‍♂️"
