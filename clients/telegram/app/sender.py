@@ -19,8 +19,7 @@ class Sender(sender.Sender):
         coordinates = obj.location.coordinates
         address = obj.location.address
 
-        city = get_city_by_id(address.city)
-
+        # country = get_country_by_id(address.country)
         return await self.send_message(
             user,
             _('contents.objects.object_form', user=user).format(
@@ -28,7 +27,7 @@ class Sender(sender.Sender):
                 desc=obj.description,
                 category=_(f'contents.objects.categories.{obj.category.name}', user=user),
                 state=_(f'contents.objects.states.{obj.state}', user=user),
-                address=get_address(address.street_number, address.street, city, address.country),
+                address=get_address(address.street_number, address.street, address.city, address.country),
                 latitude=coordinates.latitude,
                 longitude=coordinates.longitude
             ),

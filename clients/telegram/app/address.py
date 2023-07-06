@@ -13,6 +13,6 @@ def get_address(street_number: str, street: str, city: City, country: Country, )
     if city:
         address.append(city.display_name)
     else:
-        address.append(country)
+        address.append(country.name)
 
     return ', '.join(address)

@@ -31,7 +31,7 @@ class Address(models.Model):
 
     id = models.AutoField(primary_key=True)
     country = models.ForeignKey('cities_light.Country', on_delete=models.CASCADE)
-    city = models.ForeignKey('cities_light.City', on_delete=models.CASCADE)
+    city = models.ForeignKey('cities_light.City', on_delete=models.CASCADE, blank=True, null=True)
     street = models.CharField(max_length=STREET_NAME_LENGTH, blank=True, null=True)
     street_number = models.CharField(max_length=4, blank=True, null=True)
     zipcode = models.CharField(max_length=10, blank=True, null=True)

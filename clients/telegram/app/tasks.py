@@ -262,12 +262,18 @@ class CreateObjectTask(Task):
             })
             await self.sender.send_translated(user, 'contents.objects.creation.created')
         except HTTPResponseError as e:
+            print(e.status, e.content)
             if e.status == 400:
                 location = e.content.get('location')
                 if location:
                     coordinates = location.get('coordinates')
-                    if 'longitude must make a unique set' in list(coordinates.values())[0][0]:
-                        await self.sender.send_translated(user, 'exceptions.objects.creation.location.not_unique')
-                        await self.page.cancel_task(user=user, task=self)
-                        return await self.page.execute_task(user=user, task=InputObjectCoordinates)
+                    if coordinates:
+                        try:
+                            if 'longitude must make a unique set' in list(coordinates.values())[0][0]:
+                                await self.sender.send_translated(user,
+                                                                  'exceptions.objects.creation.location.not_unique')
+                                await self.page.cancel_task(user=user, task=self)
+                                return await self.page.execute_task(user=user, task=InputObjectCoordinates)
+                        except IndexError:
+                            pass
         await self.done(user=user)

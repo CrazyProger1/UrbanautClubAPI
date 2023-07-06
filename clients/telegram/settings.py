@@ -9,7 +9,7 @@ FILES = {
 
 env_conf = ENVConfig.load(FILES['ENV_CONFIG_FILE'])
 
-DEBUG = False
+DEBUG = True
 
 APP = {
     'NAME': 'Urbanaut Club',
