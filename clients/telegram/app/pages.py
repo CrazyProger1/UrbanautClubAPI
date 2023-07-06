@@ -113,7 +113,7 @@ class AddObjectPage(BasePage):
 
     async def prev_task(self, user: TelegramUser):
         tasks: tuple = self.get_tasks()
-        task: Task = next(filter(lambda t: t.is_executing(user=user), tasks))
+        task: Task = self.get_last_executed_task(user=user)
 
         task_idx = tasks.index(task)
         try:
