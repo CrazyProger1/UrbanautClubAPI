@@ -2,6 +2,7 @@ import aiogram
 
 from aiogram import types
 from utils import cls_utils, cache
+from utils.logging import logger
 from .page import Page
 from .state import UserState
 from .enums import ContentType
@@ -80,6 +81,8 @@ class Router(metaclass=cls_utils.SingletonMeta):
         await page.async_publish(page.Event.INITIALIZE, user)
 
         user.state.current_page = page
+
+        logger.debug(f'Page changed for user {user}: {page}')
 
     async def check_language_changed(self, user: TelegramUser):
         if user.state.language_changed:

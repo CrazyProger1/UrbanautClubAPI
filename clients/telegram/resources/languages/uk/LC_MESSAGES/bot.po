@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-07-05 17:30+0300\n"
+"PO-Revision-Date: 2023-07-06 12:52+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -112,3 +112,12 @@ msgstr "Хороший🟢"
 
 msgid "contents.objects.states.n"
 msgstr "Новинка⭐️"
+
+msgid "contents.search.all.end"
+msgstr "Це всі пустки🤷‍♂️"
+
+msgid "contents.search.all.start"
+msgstr "Це всі пустки🤷‍♂️"
+
+msgid "exceptions.objects.creation.location.not_unique"
+msgstr "Пустка з такими координатами вже існує!📍"

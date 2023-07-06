@@ -2,6 +2,7 @@ import aiogram
 from conf import settings
 from enum import Enum
 from utils import events, cls_utils
+from utils.logging import logger
 from .models import TelegramUser, Language
 from .sender import Sender
 
@@ -39,15 +40,18 @@ class Task(events.EventChannel, metaclass=TaskMeta):
         self.subscribe(self.Event.DONE, self.on_done)
 
     async def _execute(self, user: TelegramUser):
+        logger.debug(f'Task is executing for user {user}: {self}')
         self._executing_for.add(user)
 
     async def _cancel(self, user: TelegramUser):
+        logger.debug(f'Task cancelled for user {user}: {self}')
         try:
             self._executing_for.remove(user)
         except ValueError:
             pass
 
     async def _done(self, user: TelegramUser):
+        logger.debug(f'Task completed for user {user}: {self}')
         try:
             self._executing_for.remove(user)
         except ValueError:
@@ -75,3 +79,6 @@ class Task(events.EventChannel, metaclass=TaskMeta):
 
     async def on_done(self, user: TelegramUser):
         pass
+
+    def __repr__(self):
+        return f'Task<{self.__class__.__name__}>'

@@ -203,3 +203,6 @@ class Page(events.EventChannel, metaclass=PageMeta):
 
     async def on_task_done(self, task: Task, user: TelegramUser):
         pass
+
+    def __repr__(self):
+        return f'Page<{self.Meta.path}>'

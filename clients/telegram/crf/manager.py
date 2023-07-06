@@ -4,6 +4,7 @@ import aiohttp
 import enum
 
 from .serializer import Serializer
+from .exceptions import *
 
 
 class APIRoute(enum.Enum):
@@ -52,10 +53,11 @@ class APIManager:
                     data=json_data,
                     headers=headers
             ) as response:
-                print(json.dumps(data, indent=1))
                 data = await response.json()
-                print(response.status)
-                print(data)
+                if response.status != 201:
+                    raise HTTPResponseError(response.status, data)
+                print(json.dumps(data, indent=1))
+
                 # print(response.status)
                 # print('Data:', data)
         return instance

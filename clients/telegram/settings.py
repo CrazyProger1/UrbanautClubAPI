@@ -9,10 +9,10 @@ FILES = {
 
 env_conf = ENVConfig.load(FILES['ENV_CONFIG_FILE'])
 
-DEBUG = True
+DEBUG = False
 
 APP = {
-    'NAME': 'PC-Alarm',
+    'NAME': 'Urbanaut Club',
     'VERSION': '0.1'
 }
 
