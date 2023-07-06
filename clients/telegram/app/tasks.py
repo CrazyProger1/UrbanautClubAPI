@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import aiogram
 import geopy
 
@@ -157,14 +159,27 @@ class InputObjectDescription(InputTask):
 class InputObjectCoordinates(InputTask):
     caption_key = 'contents.objects.creation.coordinates'
 
+    @staticmethod
+    def split_coords(value: str) -> tuple[float, ...]:
+        for sep in {'x', ',', ';'}:
+            coords = value.split(sep)
+            if len(coords) == 2:
+                return tuple(map(float, value.split(sep)))
+        raise ValidationError('exceptions.objects.creation.coordinates.format')
+
     async def set_value(self, user: TelegramUser, value: str):
         try:
-            lat, lon = map(float, value.split('x'))
+            lat, lon = self.split_coords(value)
+
             user.state.ocs.data['latitude'] = round(lat, 5)
             user.state.ocs.data['longitude'] = round(lon, 5)
 
             geolocator = geopy.Nominatim(user_agent=settings.APP.NAME)
-            location = geolocator.reverse(f'{lat}, {lon}', language='en')
+            try:
+                location = geolocator.reverse(f'{lat}, {lon}', language='en')
+            except ValueError:
+                raise ValidationError('exceptions.objects.creation.coordinates.invalid')
+
             address = location.raw['address']
 
             try:
