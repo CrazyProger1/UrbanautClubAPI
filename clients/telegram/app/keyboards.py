@@ -5,12 +5,14 @@ from tbf.models import TelegramUser
 from tbf.translator import _
 
 from .models import AbandonedObjectCategory, Country
+from .address import get_address
 
 
 class MainKeyboard(ReplyKeyboard):
     button_keys = (
         'keyboards.main.buttons.search_objects',
-        'keyboards.main.buttons.add_object'
+        'keyboards.main.buttons.add_object',
+        'keyboards.main.buttons.about',
     )
 
     class Meta:
@@ -20,8 +22,10 @@ class MainKeyboard(ReplyKeyboard):
 
 
 class SearchObjectsKeyboard(ReplyKeyboard):
+    row_width = 1
     button_keys = (
         'keyboards.search.buttons.all',
+        # 'keyboards.search.buttons.by_name',
         'keyboards.common.back',
     )
 
@@ -41,7 +45,7 @@ class AllObjectsNavKeyboard(ReplyKeyboard):
 
     class Meta:
         caption_key = 'keyboards.search.all.caption'
-        autoshow = False
+        autoshow = True
         autohide = True
 
 
@@ -83,7 +87,7 @@ class CreateObjectConfirmationKeyboard(InlineKeyboard):
             desc=data['description'],
             category=_(f'contents.objects.categories.{data["category"]}', user, default=data['category']),
             state=_(f'contents.objects.states.{data["state"]}', user),
-            address=None,
+            address=get_address(data['street_number'], data['street'], data['city'], data['country']),
             latitude=data['latitude'],
             longitude=data['longitude']
         )
@@ -124,4 +128,16 @@ class SelectObjectStateKeyboard(InlineKeyboard):
     class Meta:
         caption_key = 'keyboards.add_object.select_state.caption'
         autoshow = False
+        autohide = True
+
+
+class AboutKeyboard(ReplyKeyboard):
+    row_width = 1
+    button_keys = (
+        'keyboards.common.back',
+    )
+
+    class Meta:
+        caption_key = 'keyboards.about.caption'
+        autoshow = True
         autohide = True

@@ -9,11 +9,11 @@ FILES = {
 
 env_conf = ENVConfig.load(FILES['ENV_CONFIG_FILE'])
 
-DEBUG = False
+DEBUG = True
 
 APP = {
-    'NAME': 'PC-Alarm',
-    'VERSION': '0.1'
+    'NAME': 'Urbanaut Club',
+    'VERSION': '0.0.2'
 }
 
 LOGGING = {
@@ -54,12 +54,6 @@ COMMAND = {
     'REGEXP': fr'^\/\w+',
     'PARSER_CLASS': 'app.bot.types.Parser'
 }
-
-MIDDLEWARES = [
-    'app.bot.middlewares.ErrorCatchingMiddleware',
-    'app.bot.middlewares.AuthMiddleware',
-    'app.bot.middlewares.PermissionMiddleware',
-]
 
 MESSAGES = {
     'PARSE_MODE': types.ParseMode.HTML

@@ -4,13 +4,11 @@ import geopy
 from aiogram import types
 from conf import settings
 from tbf.task import Task
-from tbf.models import TelegramUser
+from crf.exceptions import HTTPResponseError
 from .services import *
 from .exceptions import *
 from .limits import *
 from .keyboards import *
-from .creation_state import ObjectCreationState
-from .serializers import AbandonedObjectSerializer
 
 
 class SendAllObjectsTask(Task):
@@ -18,8 +16,20 @@ class SendAllObjectsTask(Task):
         super(SendAllObjectsTask, self).__init__(*args, **kwargs)
         self.keyboard = AllObjectsNavKeyboard()
 
-    async def on_execute(self, user: TelegramUser):
-        for obj in await get_all_objects(user=user):
+        self.keyboard.subscribe(self.keyboard.Event.BUTTON_PRESSED, self.on_button_pressed)
+        self.limit = 2
+        self.offset = 0
+        self.last_offset = 0
+
+    async def send_part(self, user: TelegramUser):
+        self.last_offset = 0
+        for obj in await get_all_objects(
+                user=user,
+                params={'limit': self.limit, 'offset': self.offset},
+                auto_pagination=False
+        ):
+            self.last_offset += 1
+            self.offset += 1
             msg: types.Message = await self.sender.send_object(
                 user=user,
                 obj=obj
@@ -34,8 +44,30 @@ class SendAllObjectsTask(Task):
                 )
             except aiogram.utils.exceptions.BadRequest:
                 pass
-        await self.page.show_object(user=user, obj=self.keyboard)
-        await self.done(user=user)
+        if self.last_offset == 0:
+            await self.sender.send_translated(user, 'contents.search.all.end')
+
+    async def on_execute(self, user: TelegramUser):
+        await self.send_part(user=user)
+
+    async def on_button_pressed(self, keyboard: Keyboard, button: str, user: TelegramUser, **kwargs):
+        if isinstance(keyboard, AllObjectsNavKeyboard) and self.is_executing(user=user):
+            if 'back' in button:
+                self.offset = 0
+                self.last_offset = 0
+                await self.done(user=user)
+                await self.page.back(user=user)
+
+            elif 'next' in button:
+                await self.send_part(user=user)
+            elif 'prev' in button:
+                self.offset -= self.limit + self.last_offset
+                if self.offset < 0:
+                    self.offset = 0
+                    await self.sender.send_translated(user, 'contents.search.all.start')
+                else:
+                    await self.send_part(user=user)
+            return 'break'
 
 
 class InputTask(Task):
@@ -122,14 +154,27 @@ class InputObjectDescription(InputTask):
 class InputObjectCoordinates(InputTask):
     caption_key = 'contents.objects.creation.coordinates'
 
+    @staticmethod
+    def split_coords(value: str) -> tuple[float, ...]:
+        for sep in {'x', ',', ';'}:
+            coords = value.split(sep)
+            if len(coords) == 2:
+                return tuple(map(float, value.split(sep)))
+        raise ValidationError('exceptions.objects.creation.coordinates.format')
+
     async def set_value(self, user: TelegramUser, value: str):
         try:
-            lat, lon = map(float, value.split('x'))
+            lat, lon = self.split_coords(value)
+
             user.state.ocs.data['latitude'] = round(lat, 5)
             user.state.ocs.data['longitude'] = round(lon, 5)
 
             geolocator = geopy.Nominatim(user_agent=settings.APP.NAME)
-            location = geolocator.reverse(f'{lat}, {lon}', language='en')
+            try:
+                location = geolocator.reverse(f'{lat}, {lon}', language='en')
+            except ValueError:
+                raise ValidationError('exceptions.objects.creation.coordinates.invalid')
+
             address = location.raw['address']
 
             try:
@@ -190,24 +235,40 @@ class CreateObjectTask(Task):
         data = user.state.ocs.data
         city = data['city']
 
-        await create_object(**{
-            "name": data['name'],
-            "description": data['description'],
-            "state": data['state'],
-            "category": data['category'],
-            "location": {
-                "coordinates": {
-                    "latitude": data['latitude'],
-                    "longitude": data['longitude']
-                },
-                "address": {
-                    "street": data['street'],
-                    "street_number": data['street_number'],
-                    "zipcode": data['zipcode'],
-                    "country": data['country'].id,
-                    "city": city.id if city else None
+        try:
+            await create_object(**{
+                "name": data['name'],
+                "description": data['description'],
+                "state": data['state'],
+                "category": data['category'],
+                "location": {
+                    "coordinates": {
+                        "latitude": data['latitude'],
+                        "longitude": data['longitude']
+                    },
+                    "address": {
+                        "street": data['street'],
+                        "street_number": data['street_number'],
+                        "zipcode": data['zipcode'],
+                        "country": data['country'].id,
+                        "city": city.id if city else None
+                    }
                 }
-            }
-        })
-        await self.sender.send_translated(user, 'contents.objects.creation.created')
+            })
+            await self.sender.send_translated(user, 'contents.objects.creation.created')
+        except HTTPResponseError as e:
+            print(e.status, e.content)
+            if e.status == 400:
+                location = e.content.get('location')
+                if location:
+                    coordinates = location.get('coordinates')
+                    if coordinates:
+                        try:
+                            if 'longitude must make a unique set' in list(coordinates.values())[0][0]:
+                                await self.sender.send_translated(user,
+                                                                  'exceptions.objects.creation.location.not_unique')
+                                await self.page.cancel_task(user=user, task=self)
+                                return await self.page.execute_task(user=user, task=InputObjectCoordinates)
+                        except IndexError:
+                            pass
         await self.done(user=user)

@@ -51,6 +51,7 @@ class Page(events.EventChannel, metaclass=PageMeta):
         self._set_page = set_page_callback
         self._tasks = []
         self._objects = []
+        self._last_executed_tasks = {}
 
         super(Page, self).__init__()
 
@@ -118,6 +119,7 @@ class Page(events.EventChannel, metaclass=PageMeta):
             task = task()
 
         if task in self._tasks:
+            self._last_executed_tasks[user] = task
             await task.async_publish(task.Event.EXECUTE, user=user)
 
     async def cancel_task(self, user: TelegramUser, task: type[Task] | Task):
@@ -180,6 +182,9 @@ class Page(events.EventChannel, metaclass=PageMeta):
             if page.Meta.path == path:
                 return page()
 
+    def get_last_executed_task(self, user: TelegramUser) -> Task | None:
+        return self._last_executed_tasks.get(user)
+
     async def on_initialize(self, user: TelegramUser):
         pass
 
@@ -203,3 +208,6 @@ class Page(events.EventChannel, metaclass=PageMeta):
 
     async def on_task_done(self, task: Task, user: TelegramUser):
         pass
+
+    def __repr__(self):
+        return f'Page<{self.Meta.path}>'

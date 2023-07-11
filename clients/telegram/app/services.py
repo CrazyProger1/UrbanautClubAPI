@@ -3,8 +3,8 @@ from .managers import AbandonedObjectAPIManager
 from .models import *
 
 
-async def get_all_objects(user: TelegramUser):
-    return await AbandonedObjectAPIManager.list_paginated()
+async def get_all_objects(user: TelegramUser, **kwargs):
+    return await AbandonedObjectAPIManager.list_paginated(**kwargs)
 
 
 def get_city_by_id(pk: int, raise_exceptions=True) -> City:

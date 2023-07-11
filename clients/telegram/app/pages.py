@@ -1,16 +1,6 @@
-import aiogram
-
-from aiogram import types
-from enum import Enum
-from tbf.translator import _
 from tbf.page import Page
-from tbf.models import *
-
-from .keyboards import *
-from .services import *
-from .models import *
-from .creation_state import ObjectCreationState
 from .tasks import *
+from .creation_state import ObjectCreationState
 
 
 class BasePage(Page):
@@ -40,6 +30,8 @@ class MainPage(BasePage):
             await self.next(user=user, page=SearchObjectsPage)
         elif 'add_object' in button:
             await self.next(user=user, page=AddObjectPage)
+        elif 'about' in button:
+            await self.next(user=user, page=AboutPage)
 
 
 class SearchObjectsPage(BasePage):
@@ -58,6 +50,8 @@ class SearchObjectsPage(BasePage):
         await super(SearchObjectsPage, self).on_button_pressed(keyboard, button, user, **kwargs)
         if 'all' in button:
             await self.next(user=user, page=AllObjectsPage)
+        # elif 'by_name' in button:
+        #     await self.next(user=user, page=SearchByNamePage)
 
 
 class AllObjectsPage(BasePage):
@@ -74,6 +68,23 @@ class AllObjectsPage(BasePage):
 
     async def on_initialize(self, user: TelegramUser):
         await self.execute_task(user=user, task=SendAllObjectsTask)
+
+
+class SearchByNamePage(BasePage):
+    object_classes = (
+
+    )
+    task_classes = (
+
+    )
+
+    class Meta:
+        default = False
+        path = 'main.search.by_name'
+
+    async def on_initialize(self, user: TelegramUser):
+        pass
+        # await self.execute_task(user=user, task=SendAllObjectsTask)
 
 
 class AddObjectPage(BasePage):
@@ -113,7 +124,7 @@ class AddObjectPage(BasePage):
 
     async def prev_task(self, user: TelegramUser):
         tasks: tuple = self.get_tasks()
-        task: Task = next(filter(lambda t: t.is_executing(user=user), tasks))
+        task: Task = self.get_last_executed_task(user=user)
 
         task_idx = tasks.index(task)
         try:
@@ -130,3 +141,13 @@ class AddObjectPage(BasePage):
                 await self.prev_task(user=user)
             elif 'cancel' in button:
                 await self.back(user=user)
+
+
+class AboutPage(BasePage):
+    object_classes = (
+        AboutKeyboard,
+    )
+
+    class Meta:
+        default = False
+        path = 'main.about'

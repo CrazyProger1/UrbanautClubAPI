@@ -40,7 +40,7 @@ class AbandonedObjectCategorySerializer(serializers.ModelSerializer):
 
 
 class AbandonedObjectSerializer(serializers.ModelSerializer):
-    location = AbandonedObjectLocationSerializer(read_only=False, required=False)
+    location = AbandonedObjectLocationSerializer(read_only=False)
 
     class Meta:
         model = AbandonedObject
