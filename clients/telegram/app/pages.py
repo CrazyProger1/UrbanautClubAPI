@@ -50,6 +50,8 @@ class SearchObjectsPage(BasePage):
         await super(SearchObjectsPage, self).on_button_pressed(keyboard, button, user, **kwargs)
         if 'all' in button:
             await self.next(user=user, page=AllObjectsPage)
+        # elif 'by_name' in button:
+        #     await self.next(user=user, page=SearchByNamePage)
 
 
 class AllObjectsPage(BasePage):
@@ -66,6 +68,23 @@ class AllObjectsPage(BasePage):
 
     async def on_initialize(self, user: TelegramUser):
         await self.execute_task(user=user, task=SendAllObjectsTask)
+
+
+class SearchByNamePage(BasePage):
+    object_classes = (
+
+    )
+    task_classes = (
+
+    )
+
+    class Meta:
+        default = False
+        path = 'main.search.by_name'
+
+    async def on_initialize(self, user: TelegramUser):
+        pass
+        # await self.execute_task(user=user, task=SendAllObjectsTask)
 
 
 class AddObjectPage(BasePage):

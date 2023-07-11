@@ -22,8 +22,10 @@ class MainKeyboard(ReplyKeyboard):
 
 
 class SearchObjectsKeyboard(ReplyKeyboard):
+    row_width = 1
     button_keys = (
         'keyboards.search.buttons.all',
+        # 'keyboards.search.buttons.by_name',
         'keyboards.common.back',
     )
 
