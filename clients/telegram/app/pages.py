@@ -30,6 +30,8 @@ class MainPage(BasePage):
             await self.next(user=user, page=SearchObjectsPage)
         elif 'add_object' in button:
             await self.next(user=user, page=AddObjectPage)
+        elif 'about' in button:
+            await self.next(user=user, page=AboutPage)
 
 
 class SearchObjectsPage(BasePage):
@@ -120,3 +122,13 @@ class AddObjectPage(BasePage):
                 await self.prev_task(user=user)
             elif 'cancel' in button:
                 await self.back(user=user)
+
+
+class AboutPage(BasePage):
+    object_classes = (
+        AboutKeyboard,
+    )
+
+    class Meta:
+        default = False
+        path = 'main.about'

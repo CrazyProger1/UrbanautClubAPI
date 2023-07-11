@@ -24,9 +24,9 @@ class ErrorCatchingMiddleware(Middleware):
         try:
             return await method(message_or_callback, **kwargs)
         except Exception as e:
+            logger.error(f'{type(e).__name__}: {e}')
             if settings.DEBUG:
                 raise e
-            logger.error(f'{type(e).__name__}: {e}')
 
             await self.bot.send_message(
                 message_or_callback.from_user.id,
@@ -51,6 +51,7 @@ class AuthMiddleware(Middleware):
                 last_name=tg_user.last_name,
                 language=language
             )
+            logger.debug(f'User registered: {db_user}')
         db_user.username = tg_user.username
         db_user.first_name = tg_user.first_name
         db_user.last_name = tg_user.last_name

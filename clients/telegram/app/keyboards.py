@@ -11,7 +11,8 @@ from .address import get_address
 class MainKeyboard(ReplyKeyboard):
     button_keys = (
         'keyboards.main.buttons.search_objects',
-        'keyboards.main.buttons.add_object'
+        'keyboards.main.buttons.add_object',
+        'keyboards.main.buttons.about',
     )
 
     class Meta:
@@ -125,4 +126,16 @@ class SelectObjectStateKeyboard(InlineKeyboard):
     class Meta:
         caption_key = 'keyboards.add_object.select_state.caption'
         autoshow = False
+        autohide = True
+
+
+class AboutKeyboard(ReplyKeyboard):
+    row_width = 1
+    button_keys = (
+        'keyboards.common.back',
+    )
+
+    class Meta:
+        caption_key = 'keyboards.about.caption'
+        autoshow = True
         autohide = True

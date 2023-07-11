@@ -13,7 +13,7 @@ DEBUG = True
 
 APP = {
     'NAME': 'Urbanaut Club',
-    'VERSION': '0.1'
+    'VERSION': '0.0.2'
 }
 
 LOGGING = {
@@ -54,12 +54,6 @@ COMMAND = {
     'REGEXP': fr'^\/\w+',
     'PARSER_CLASS': 'app.bot.types.Parser'
 }
-
-MIDDLEWARES = [
-    'app.bot.middlewares.ErrorCatchingMiddleware',
-    'app.bot.middlewares.AuthMiddleware',
-    'app.bot.middlewares.PermissionMiddleware',
-]
 
 MESSAGES = {
     'PARSE_MODE': types.ParseMode.HTML

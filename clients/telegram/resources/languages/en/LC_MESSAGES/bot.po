@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-07-06 13:02+0300\n"
+"PO-Revision-Date: 2023-07-11 13:18+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -130,3 +130,27 @@ msgstr "An object with that coordinates already exists!📍"
 
 msgid "exceptions.objects.creation.coordinates.invalid"
 msgstr "The coordinates are invalid!📍"
+
+msgid "contents.objects.categories.Quarry"
+msgstr "Quarry🚜"
+
+msgid "contents.objects.categories.Mine"
+msgstr "Mine👷‍♂️"
+
+msgid "contents.objects.categories.Bunker"
+msgstr "Bunker🗻"
+
+msgid "contents.objects.categories.University"
+msgstr "University👨‍🎓"
+
+msgid "contents.objects.categories.Barracks"
+msgstr "Barracks🪖"
+
+msgid "contents.objects.categories.Hospital"
+msgstr "Hospital🏥"
+
+msgid "keyboards.main.buttons.about"
+msgstr "About📄"
+
+msgid "keyboards.about.caption"
+msgstr "Urbanaut Club is a social network for urban explorers such as stalkers, diggers, industrial climbers or just bloggers."

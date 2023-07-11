@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-03-13 14:25+0200\n"
-"PO-Revision-Date: 2023-07-06 13:02+0300\n"
+"PO-Revision-Date: 2023-07-11 13:22+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -124,3 +124,27 @@ msgstr "Пустка з такими координатами вже існує!
 
 msgid "exceptions.objects.creation.coordinates.invalid"
 msgstr "Координати недійсні!📍"
+
+msgid "contents.objects.categories.Quarry"
+msgstr "Кар'єр🚜"
+
+msgid "contents.objects.categories.Mine"
+msgstr "Шахта👷‍♂️"
+
+msgid "contents.objects.categories.Bunker"
+msgstr "Бункер🗻"
+
+msgid "contents.objects.categories.University"
+msgstr "Університет👨‍🎓"
+
+msgid "contents.objects.categories.Barracks"
+msgstr "Казарма🪖"
+
+msgid "contents.objects.categories.Hospital"
+msgstr "Лікарня🏥"
+
+msgid "keyboards.main.buttons.about"
+msgstr "Про проект📄"
+
+msgid "keyboards.about.caption"
+msgstr "Urbanaut Club — це соціальна мережа для дослідників пусток, таких як сталкери, дигери, промислові альпіністи чи просто блогери."
