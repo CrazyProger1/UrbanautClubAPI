@@ -4,7 +4,7 @@ Urbanaut Club is a social network for urban explorers such as stalkers, diggers,
 
 ## Status
 
-**Suspended** for a while writing a cool framework for creating complex multipage bots in telegram.
+**Suspended** for a while studying in University.
 
 ## License
 
